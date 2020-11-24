@@ -1,0 +1,39 @@
+[
+	{
+		"name": "Favorite",
+		"description": "Group for our favorite games",
+		"games": [
+			"Roblox",
+			"Fortnite",
+			"Minecraft"
+		]
+	},
+	{
+		"name": "eSports",
+		"description": "Professional competitive games",
+		"games": [
+			"Counter-Strike: Global Offensive",
+			"Valorant",
+			"League of Legends",
+			"Overwatch",
+			"Rocket League"
+		]
+	},
+	{
+		"name": "ToBeEdited",
+		"description": "Group to be edited in tests",
+		"games": []
+	},
+	{
+		"name": "ToBeRemoved",
+		"description": "Group to remove game in tests",
+		"games": [
+			"Remove me"
+		]
+	},
+	{
+		"name": "ToBeAdded",
+		"description": "Group to add game in tests",
+		"games": []
+	}
+]

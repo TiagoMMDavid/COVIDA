@@ -1,0 +1,13 @@
+GET    /covida/games/top                    => getTopGames()
+GET    /covida/games/search                 => searchGames()    -> Query String: game
+
+GET    /covida/groups          		    => getGroups()
+GET    /covida/groups/<group>               => getGroup()
+
+PUT    /covida/groups                       => addGroup()     -> body: groupName. description
+PUT    /covida/groups/<group>               => editGroup()    -> body: groupName. description
+
+POST    /covida/groups/<group>/games         => addGameToGroup() -> body: game
+DELETE /covida/groups/<group>/games/<game>  => deleteGameFromGroup()
+
+GET    /covida/groups/<group>/games         => getGamesFromGroup() -> Query String: valor min e max de total_rating

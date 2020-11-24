@@ -1,0 +1,12 @@
+[
+    {
+        "name": "Favorite",
+        "description": "Group for our favorite games",
+        "games": ["Roblox", "Fortnite", "Minecraft"]
+    },
+    {
+        "name": "eSports",
+        "description": "Professional competitive games",
+        "games": ["Counter-Strike: Global Offensive", "Valorant", "League of Legends", "Overwatch", "Rocket League"]
+    }
+]
