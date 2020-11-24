@@ -19,7 +19,7 @@ const IGDB_BODY_FIELDS_LIMIT = 'limit'
  */
 
 /**
- * @param {Integer} limit limit of results
+ * @param {Number} limit limit of results
  * @param {function(Error, Array<Game>)} cb Callback receiving an array with game names or Error if not succeeded
  */
 function getTopGames(limit, cb) {
@@ -41,9 +41,8 @@ function getTopGames(limit, cb) {
 
 /**
  * @param {String} game game name
- * @param {Integer} limit limit of results
- * @param {function(Error, Array<Game>)} cb Callback receives an array of Game objects with given name or 
- * an Error if there is no games with given name.
+ * @param {Number} limit limit of results
+ * @param {function(Error, Array<Game>)} cb Callback receives an array of Game objects with given name (can be empty).
  */
 function searchGames(game, limit, cb) {
     const options = {
@@ -61,7 +60,6 @@ function searchGames(game, limit, cb) {
         cb(null, obj)
     })
 }
-
 
 module.exports = {
     getTopGames,

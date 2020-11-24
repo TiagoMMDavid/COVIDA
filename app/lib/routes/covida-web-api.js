@@ -1,40 +1,30 @@
 'use strict'
 
-//const services = require('./../repo/covida-services')
-
 const Router = require('express').Router
 const router = Router()
 const bodyParser = require('body-parser').urlencoded({ extended: false })
-const igdbData = require('./../repo/igdb-data')
+const service = require('./../repo/covida-services')
 
 module.exports = router
 
-const DEFAULT_LIMIT = 10
-
 router.get('/covida/games/search', (req, resp, next) => {
-    // TODO:
-    const limit = req.query.limit || DEFAULT_LIMIT
     const name = req.query.name
     if (name) {
-        console.log(limit)
-        igdbData.searchGames(name, limit, (err, games) => {
+        service.searchGames(name, req.query.limit, (err, games) => {
             if (err) return next(err)
             resp.json(games)
         })
     } else {
-        const err = new Error()
-        err.status = 400
-        err.message = 'You need to specify the name of the games to search'
+        const err = {
+            status: 400,
+            message: 'You need to specify the name of the games to search'
+        }
         return next(err)
     }
-
 })
 
 router.get('/covida/games/top', (req, resp, next) => {
-    // TODO:
-    const limit = req.query.limit || DEFAULT_LIMIT
-
-    igdbData.getTopGames(limit, (err, games) => {
+    service.getTopGames(req.query.limit, (err, games) => {
         if (err) next(err)
         resp.json(games)
     })

@@ -106,7 +106,7 @@ function getGames(groupName, cb) {
 /**
  * Adds a new game to the array of games of the Group with 
  * given name.
- * It does not verify repetitions among games.
+ * It does not verify repetitions amongst games.
  * 
  * @param {String} groupName 
  * @param {String} game 
@@ -130,12 +130,12 @@ function addGame(groupName, game, cb) {
 }
 
 /**
- * Delte a game from the array of games of the Group with 
- * given name.
+ * Delete a game from the array of games of the Group with 
+ * given name. Deletes repeated games. 
  * 
  * @param {String} groupName 
  * @param {String} game 
- * @param {function(Error, Group)} cb 
+ * @param {function(Error, Group, String)} cb String being the removed game's name
  */
 function deleteGame(groupName, game, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
@@ -146,10 +146,19 @@ function deleteGame(groupName, game, cb) {
         if(desiredGroup.length == 0) return cb(null, null)
         
         const group = desiredGroup[0]
-        group.games = group.games.filter(currGame => currGame != game)
+        let removedGame = null
+        group.games = group.games.filter(currGame => {
+            if(currGame == game) {
+                removedGame = currGame
+                return false
+            }
+            return true
+        })
+
+        if (!removedGame) return cb(null, group, null)
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
             if (err) cb(err)
-            cb(null, group)
+            cb(null, group, removedGame)
         })
     })
 }
@@ -158,6 +167,7 @@ function init(path) {
     if(path) groupsPath = path
     return API
 }
+
 const API = {
     init,
     getGroup,
