@@ -1,12 +1,46 @@
 [
-    {
-        "name": "Favorite",
-        "description": "Group for our favorite games",
-        "games": ["Roblox", "Fortnite", "Minecraft"]
-    },
-    {
-        "name": "eSports",
-        "description": "Professional competitive games",
-        "games": ["Counter-Strike: Global Offensive", "Valorant", "League of Legends", "Overwatch", "Rocket League"]
+	{
+		"name": "Favorite",
+		"description": "Group for our favorite games",
+		"games": [
+			{
+				"id": 17269,
+				"name": "Roblox"
+			},
+			{
+				"id": 1905,
+				"name": "Fortnite"
+			},
+			{
+				"id": 135400,
+				"name": "Minecraft"
+			}
+		]
+	},
+	{
+		"name": "eSports",
+		"description": "Professional competitive games",
+		"games": [
+			{
+				"id": 1372,
+				"name": "Counter-Strike: Global Offensive"
+			},
+			{
+				"id": 126459,
+				"name": "Valorant"
+			},
+			{
+				"id": 115,
+				"name": "League of Legends"
+			},
+			{
+				"id": 8173,
+				"name": "Overwatch"
+			},
+			{
+				"id": 11198,
+				"name": "Rocket League"
+			}
+		]
     }
 ]

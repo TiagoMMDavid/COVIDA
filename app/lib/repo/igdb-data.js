@@ -5,8 +5,11 @@ const urllib = require('urllib')
 const IGDB_HOST = 'https://api.igdb.com/v4/games'
 const IGDB_CLIENT_ID = '8cj604as0sl0vn27qw84caqgtvj295'
 const IGDB_AUTHORIZATION_HEADER = 'Bearer h9tr09eft8w1sm8ffw0rot65krukjh'
-const IGDB_BODY_FIELDS_SEARCH = 'fields name, rating, summary, follows; where category = 0; search'
-const IGDB_BODY_FIELDS_TOPGAMES = 'fields name, rating, summary, follows; sort follows desc; where follows != null & category = 0;'
+
+const IGDB_COMMON_BODY_FIELDS = 'fields name, total_rating, summary, follows; where category = 0;'
+const IGDB_TOP_GAMES = 'sort follows desc; where follows != null;'
+const IGDB_SEARCH = 'search'
+const IGDB_GET_GAMES_BY_IDS = 'sort total_rating desc; where id ='
 const IGDB_BODY_FIELDS_LIMIT = 'limit'
 
 /**
@@ -14,7 +17,7 @@ const IGDB_BODY_FIELDS_LIMIT = 'limit'
  * @property {Integer} id
  * @property {String} name
  * @property {String} summary
- * @property {Double} rating
+ * @property {Double} total_rating
  * @property {Integer} follows
  */
 
@@ -30,7 +33,7 @@ function getTopGames(limit, cb) {
             'Authorization': IGDB_AUTHORIZATION_HEADER,
             'Accept': 'application/json'
         },
-        content: `${IGDB_BODY_FIELDS_TOPGAMES} ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
+        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_TOP_GAMES} ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
     }
     urllib.request(IGDB_HOST, options, (err, data, res) => {
         if(err) return cb(err)
@@ -52,8 +55,42 @@ function searchGames(game, limit, cb) {
             'Authorization': IGDB_AUTHORIZATION_HEADER,
             'Accept': 'application/json'
         },
-        content: `${IGDB_BODY_FIELDS_SEARCH} "${game}"; ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
+        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_SEARCH} "${game}"; ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
     }
+    urllib.request(IGDB_HOST, options, (err, data, res) => {
+        if(err) return cb(err)
+        const obj = JSON.parse(data)
+        cb(null, obj)
+    })
+}
+
+/** 
+ * Gets the games with given id. The array returned is sorted by rating, from highest to lowest.
+ * @param {Array<Integer>} ids ids of game
+ * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
+ */
+function getGamesByIds(ids, cb) {
+    if (ids.length == 0)
+        return cb(null, [])
+
+    let formattedIds = '('
+    ids.forEach((id, index) => {
+        formattedIds += id
+        if (index != ids.length - 1)
+            formattedIds += ', '
+    })
+    formattedIds += ')'
+
+    const options = {
+        method: 'POST',
+        headers: {
+            'Client-ID': IGDB_CLIENT_ID,
+            'Authorization': IGDB_AUTHORIZATION_HEADER,
+            'Accept': 'application/json'
+        },
+        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_GET_GAMES_BY_IDS} ${formattedIds};`
+    }
+    
     urllib.request(IGDB_HOST, options, (err, data, res) => {
         if(err) return cb(err)
         const obj = JSON.parse(data)
@@ -63,5 +100,6 @@ function searchGames(game, limit, cb) {
 
 module.exports = {
     getTopGames,
-    searchGames
+    searchGames,
+    getGamesByIds
 }

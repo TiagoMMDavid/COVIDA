@@ -13,7 +13,7 @@ const app = express()
 
 app.use(routes)
 app.use((err, req, resp, next) => {
-    resp.status(err.status)
+    resp.status(err.status || 500)
     resp.json(err)
 })
 app.listen(PORT, () => console.log(`Listening for HTTP requests on port ${PORT}`))

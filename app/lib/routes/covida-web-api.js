@@ -7,17 +7,22 @@ const service = require('./../repo/covida-services')
 
 module.exports = router
 
+const INTERNAL_ERROR = {
+    status: 500,
+    message: 'Internal Server Error' 
+}
+
 router.get('/covida/games/search', (req, resp, next) => {
     const name = req.query.name
     if (name) {
         service.searchGames(name, req.query.limit, (err, games) => {
-            if (err) return next(err)
+            if (err) return next(INTERNAL_ERROR)
             resp.json(games)
         })
     } else {
         const err = {
             status: 400,
-            message: 'You need to specify the name of the games to search'
+            message: 'No name specified'
         }
         return next(err)
     }
@@ -25,24 +30,51 @@ router.get('/covida/games/search', (req, resp, next) => {
 
 router.get('/covida/games/top', (req, resp, next) => {
     service.getTopGames(req.query.limit, (err, games) => {
-        if (err) next(err)
+        if (err) return next(INTERNAL_ERROR)
         resp.json(games)
     })
 })
 
 router.get('/covida/groups/:group/games', (req, resp, next) => {
-    // TODO:
-    resp.end()
+    service.listGroupGames(req.params.group, req.query.min, req.query.max, (err, group, games) => {
+        if (err) return next(INTERNAL_ERROR)
+        if (!group) {
+            const err = {
+                status: 404,
+                message: 'Group does not exist'
+            }
+            return next(err)
+        }
+        if (!games) {
+            const err = {
+                status: 400,
+                message: 'Min can\'t be greater than max'
+            }
+            return next(err)
+        }
+        resp.json(games)
+    })
 })
 
 router.get('/covida/groups/:group', (req, resp, next) => {
-    // TODO:
-    resp.end()
+    service.getGroup(req.params.group, (err, group) => {
+        if (err) return next(INTERNAL_ERROR)
+        if (!group) {
+            const err = {
+                status: 404,
+                message: 'Group does not exist'
+            }
+            return next(err)
+        }
+        resp.json(group)
+    })
 })
 
 router.get('/covida/groups', (req, resp, next) => {
-    // TODO:
-    resp.end()
+    service.getGroups((err, groups) => {
+        if (err) return next(INTERNAL_ERROR)
+        resp.json(groups)
+    })
 })
 
 router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {

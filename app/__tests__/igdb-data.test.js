@@ -4,6 +4,7 @@
 const TOPGAMES_MOCK_PATH = './__tests__/mocks/topgames.json'
 const SEARCHGAMES_FORTNITE_MOCK_PATH = './__tests__/mocks/searchgames-fortnite.json'
 const SEARCHGAMES_EMPTY_MOCK_PATH = './__tests__/mocks/searchgames-empty.json'
+const SEARCHGAMES_GET_GAME_BY_ID_PATH = './__tests__/mocks/getgamebyid-1-and-2.json'
 
 const igdb = require('./../lib/repo/igdb-data')
 const urlib = require('urllib')
@@ -51,6 +52,32 @@ test('Test igdb-data module searchGames empty', done => {
     igdb.searchGames('nonexistent_game', 1, (err, games) => {
         expect(err).toBeFalsy()
         expect(games.length == 0).toBeTruthy()
+        done()
+    })
+})
+
+test('Test igdb-data module getGamesByIds successfully', done => {
+    urlib.request.mockImplementationOnce((url, options, cb) => {
+        fs.readFile(SEARCHGAMES_GET_GAME_BY_ID_PATH, cb)
+    })
+
+    igdb.getGamesByIds([1, 2], (err, games) => {
+        expect(err).toBeFalsy()
+
+        expect(games[0].id).toBe(1)
+        expect(games[0].name).toBe('Thief II: The Metal Age')
+        expect(games[1].id).toBe(2)
+        expect(games[1].name).toBe('Thief: The Dark Project')
+
+        done()
+    })
+})
+
+test('Test igdb-data module getGamesByIds empty', done => {
+    igdb.getGamesByIds([], (err, games) => {
+        expect(err).toBeFalsy()
+        expect(games).toBeTruthy()
+        expect(games.length).toBe(0)
         done()
     })
 })

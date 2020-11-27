@@ -135,16 +135,31 @@ function deleteGameFromGroup(groupName, gameId, cb) {
  * @param {String} groupName 
  * @param {Number} minRating
  * @param {Number} maxRating  
- * @param {function(Error, Result)} cb 
+ * @param {function(Error, Group, Array<GameDetail>)} cb 
  */
 function listGroupGames(groupName, minRating, maxRating, cb) {
     minRating = minRating || MIN_RATING
-    maxRating = maxRating || MIN_RATING
-    if (maxRating < minRating) {
-        // TODO: callback error
-    }
+    maxRating = maxRating || MAX_RATING
 
-    // TODO: DO METHOD
+    db.getGroup(groupName, (err, group) => {
+        if (err) return cb(err)
+
+        if (!group) {
+            return cb(null, null, null)
+        }
+        
+        if (maxRating < minRating) {
+            return cb(null, group, null)
+        }
+
+        let ids = []
+        group.games.forEach(game => ids.push(game.id))
+
+        igdb.getGamesByIds(ids, (err, games) => {
+            if (err) return cb(err)
+            cb(null, group, games.filter(game => game.total_rating >= minRating && game.total_rating <= maxRating))
+        })
+    })
 }
 
 
@@ -156,5 +171,6 @@ module.exports = {
     addGroup,
     editGroup,
     addGameToGroup,
-    deleteGameFromGroup
+    deleteGameFromGroup,
+    listGroupGames
 }
