@@ -5,10 +5,16 @@ const fs = require('fs')
 let groupsPath = './data/groups.json'
 
 /**
+ * @typedef Game
+ * @property {Integer} id
+ * @property {String} name
+ */
+
+/**
  * @typedef Group
  * @property {String} name
  * @property {String} description
- * @property {Array} games Array of strings with games names.
+ * @property {Array<Game>} games Array of strings with games names.
  */
 
 /**
@@ -57,8 +63,8 @@ function addGroup(name, description, cb) {
         groups.push(newGroup)
 
         fs.writeFile(groupsPath, JSON.stringify(groups, null, '\t'), (err) => {
-            if (err) cb(err)
-            else cb(null, newGroup)
+            if (err) return cb(err)
+            cb(null, newGroup)
         })
     })
 }
@@ -83,7 +89,7 @@ function editGroup(previousName, newName, newDescription, cb) {
         group.description = newDescription
 
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) cb(err)
+            if (err) return cb(err)
             cb(null, group)
         })
     })
@@ -92,7 +98,7 @@ function editGroup(previousName, newName, newDescription, cb) {
 /**
  * Gets the games for a given group
  * @param {String} groupName
- * @param {function(Error, Array<String>)} cb 
+ * @param {function(Error, Array<Game>)} cb 
  */
 function getGames(groupName, cb) {
     getGroup(groupName, (err, group) => {
@@ -109,22 +115,32 @@ function getGames(groupName, cb) {
  * It does not verify repetitions amongst games.
  * 
  * @param {String} groupName 
- * @param {String} game 
- * @param {function(Error, Group)} cb 
+ * @param {Integer} gameId 
+ * @param {String} gameName
+ * @param {function(Error, Group, Game)} cb
  */
-function addGame(groupName, game, cb) {
+function addGame(groupName, gameId, gameName, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
         if(err) return cb(err)
 
         const groupArr = JSON.parse(buffer)
         const desiredGroup = groupArr.filter(group => group.name == groupName)
-        if(desiredGroup.length == 0) return cb(null, null)
+        if(desiredGroup.length == 0) return cb(null, null, null)
         
         const group = desiredGroup[0]
+        // Check if game already exists
+        if (group.games.filter(game => game.id == gameId).length != 0)
+            return cb(null, group, null)
+
+        const game = {
+            id: gameId,
+            name: gameName
+        }
         group.games.push(game)
+
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) cb(err)
-            cb(null, group)
+            if (err) return cb(err)
+            cb(null, group, game)
         })
     })
 }
@@ -134,21 +150,21 @@ function addGame(groupName, game, cb) {
  * given name. Deletes repeated games. 
  * 
  * @param {String} groupName 
- * @param {String} game 
- * @param {function(Error, Group, String)} cb String being the removed game's name
+ * @param {Integer} gameId 
+ * @param {function(Error, Group, Game)} cb
  */
-function deleteGame(groupName, game, cb) {
+function deleteGame(groupName, gameId, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
         if(err) return cb(err)
 
         const groupArr = JSON.parse(buffer)
         const desiredGroup = groupArr.filter(group => group.name == groupName)
-        if(desiredGroup.length == 0) return cb(null, null)
+        if(desiredGroup.length == 0) return cb(null, null, null)
         
         const group = desiredGroup[0]
         let removedGame = null
         group.games = group.games.filter(currGame => {
-            if(currGame == game) {
+            if(currGame.id == gameId) {
                 removedGame = currGame
                 return false
             }
@@ -157,7 +173,7 @@ function deleteGame(groupName, game, cb) {
 
         if (!removedGame) return cb(null, group, null)
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) cb(err)
+            if (err) return cb(err)
             cb(null, group, removedGame)
         })
     })

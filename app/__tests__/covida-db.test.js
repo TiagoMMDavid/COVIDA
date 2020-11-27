@@ -38,6 +38,7 @@ test('Test groups module getGroup successfuly', done => {
     groups.getGroup('Favorite', (err, group) => {
         expect(err).toBeFalsy()
 
+        expect(group).toBeTruthy()
         expect(group.name).toBe('Favorite')
         expect(group.description).toBe('Group for our favorite games')
         group.games.forEach((game, i) => {
@@ -59,6 +60,7 @@ test('Test groups module getGroups successfuly', done => {
     groups.getGroups((err, groups) => {
         expect(err).toBeFalsy()
 
+        expect(groups).toBeTruthy()
         groups.slice(0, 2).forEach((group, i) => {
             expect(group.name).toBe(EXPECTED_GROUPS[i].name)
             expect(group.description).toBe(EXPECTED_GROUPS[i].description)
@@ -75,6 +77,7 @@ test('Test groups module addGroup successfuly', done => {
     groups.addGroup('TestGroup', 'Test Description', (err, group) => {
         expect(err).toBeFalsy()
 
+        expect(group).toBeTruthy()
         expect(group.name).toBe('TestGroup')
         expect(group.description).toBe('Test Description')
         expect(group.games.length).toBe(0)
@@ -94,6 +97,7 @@ test('Test groups module editGroup successfuly', done => {
     groups.editGroup('ToBeEdited', 'newName', 'newDesc', (err, group) => {
         expect(err).toBeFalsy()
 
+        expect(group).toBeTruthy()
         expect(group.name).toBe('newName')
         expect(group.description).toBe('newDesc')
         expect(group.games.length).toBe(0)
@@ -113,6 +117,7 @@ test('Test groups module getGames successfuly', done => {
     groups.getGames('Favorite', (err, games) => {
         expect(err).toBeFalsy()
 
+        expect(games).toBeTruthy()
         games.forEach((game, i) => {
             expect(game).toBe(EXPECTED_GROUPS[0].games[i])
         })
@@ -129,39 +134,70 @@ test('Test groups module getGames for absent group name', done => {
 })
 
 test('Test groups module addGame successfuly', done => {
-    groups.addGame('ToBeAdded', 'newGame', (err, group) => {
+    groups.addGame('ToBeAdded', 'newGame', (err, group, game) => {
         expect(err).toBeFalsy()
 
+        expect(group).toBeTruthy()
         expect(group.name).toBe('ToBeAdded')
         expect(group.description).toBe('Group to add game in tests')
         expect(group.games[0]).toBe('newGame')
+        expect(game).toBe('newGame')
         done()
     })
 })
 
 test('Test groups module addGame for absent group name', done => {
-    groups.addGame('Absent', 'game', (err, group) => {
+    groups.addGame('Absent', 'game', (err, group, game) => {
         expect(err).toBeFalsy()
+
         expect(group).toBeFalsy()
+        expect(game).toBeFalsy()
+        done()
+    })
+})
+
+test('Test groups module addGame for duplicate game', done => {
+    groups.addGame('Favorite', 'Roblox', (err, group, game) => {
+        expect(err).toBeFalsy()
+
+        expect(group).toBeTruthy()
+        expect(group.name).toBe('Favorite')
+        expect(game).toBeFalsy()
         done()
     })
 })
 
 test('Test groups module deleteGame successfuly', done => {
-    groups.deleteGame('ToBeRemoved', 'Remove me', (err, group) => {
+    groups.deleteGame('ToBeRemoved', 'Remove me', (err, group, game) => {
         expect(err).toBeFalsy()
 
+        expect(group).toBeTruthy()
         expect(group.name).toBe('ToBeRemoved')
         expect(group.description).toBe('Group to remove game in tests')
         expect(group.games.length).toBe(0)
+        
+        expect(game).toBe('Remove me')
         done()
     })
 })
 
 test('Test groups module deleteGame for absent group name', done => {
-    groups.deleteGame('Absent', 'game', (err, group) => {
+    groups.deleteGame('Absent', 'game', (err, group, game) => {
         expect(err).toBeFalsy()
+
         expect(group).toBeFalsy()
+        expect(game).toBeFalsy()
+        done()
+    })
+})
+
+test('Test groups module deleteGame for absent game', done => {
+    groups.deleteGame('Favorite', 'Absent', (err, group, game) => {
+        expect(err).toBeFalsy()
+
+        expect(group).toBeTruthy()
+        expect(group.name).toBe('Favorite')
+        expect(game).toBeFalsy()
         done()
     })
 })

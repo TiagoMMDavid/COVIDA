@@ -10,7 +10,7 @@ const IGDB_BODY_FIELDS_TOPGAMES = 'fields name, rating, summary, follows; sort f
 const IGDB_BODY_FIELDS_LIMIT = 'limit'
 
 /**
- * @typedef Game
+ * @typedef GameDetail
  * @property {Integer} id
  * @property {String} name
  * @property {String} summary
@@ -20,7 +20,7 @@ const IGDB_BODY_FIELDS_LIMIT = 'limit'
 
 /**
  * @param {Number} limit limit of results
- * @param {function(Error, Array<Game>)} cb Callback receiving an array with game names or Error if not succeeded
+ * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array with game names or Error if not succeeded
  */
 function getTopGames(limit, cb) {
     const options = {
@@ -42,7 +42,7 @@ function getTopGames(limit, cb) {
 /**
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @param {function(Error, Array<Game>)} cb Callback receives an array of Game objects with given name (can be empty).
+ * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
  */
 function searchGames(game, limit, cb) {
     const options = {
