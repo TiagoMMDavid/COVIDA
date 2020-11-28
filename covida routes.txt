@@ -1,5 +1,6 @@
 GET    /covida/games/top                    => getTopGames()
 GET    /covida/games/search                 => searchGames()    -> Query String: game
+GET    /covida/games/<id>                   => getGameById()
 
 GET    /covida/groups          		    => getGroups()
 GET    /covida/groups/<group>               => getGroup()
