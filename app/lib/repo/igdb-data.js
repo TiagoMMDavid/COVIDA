@@ -3,8 +3,8 @@
 const urllib = require('urllib')
 
 const IGDB_HOST = 'https://api.igdb.com/v4/games'
-const IGDB_CLIENT_ID = '8cj604as0sl0vn27qw84caqgtvj295'
-const IGDB_AUTHORIZATION_HEADER = 'Bearer h9tr09eft8w1sm8ffw0rot65krukjh'
+const IGDB_CLIENT_ID = process.env.COVIDA_CLIENT_ID
+const IGDB_AUTHORIZATION_HEADER = `Bearer ${process.env.COVIDA_AUTHORIZATION}`
 
 const IGDB_COMMON_BODY_FIELDS = 'fields name, total_rating, summary, follows; where category = 0;'
 const IGDB_TOP_GAMES = 'sort follows desc; where follows != null;'

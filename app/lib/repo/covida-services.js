@@ -8,13 +8,6 @@ const MIN_RATING = 0
 const MAX_RATING = 100
 
 /**
- * @typedef Result
- * @property {Boolean} gameExists
- * @property {Boolean} groupExists
- * @property {Boolean} repeatedGame
- */
-
-/**
  * Returns an array with limit top games.
  * 
  * @param {Number} limit 
@@ -34,6 +27,18 @@ function searchGames(gameName, limit, cb) {
 }
 
 /**
+ * @param {Integer} gameId 
+ * @param {function(Error, GameDetail)} cb 
+ */
+function getGameById(gameId, cb) {
+    igdb.getGamesByIds([gameId], (err, games) => {
+        if (err) return cb(err)
+        if (games.length == 0) return cb(null, null)
+        cb(null, games[0])
+    })
+}
+
+/**
  * @param {function(Error, Array<Group>)} cb 
  */
 function getGroups(cb) {
@@ -49,8 +54,7 @@ function getGroup(name, cb) {
 }
 
 /**
- * Add a new Group object with given name and description if it does not exist yet.
- * Returns an Error if that group already exists.
+ * Adds or replaces a Group object with given name and description.
  * @param {String} name
  * @param {String} description 
  * @param {function(Error, Group)} cb
@@ -77,29 +81,19 @@ function editGroup(previousName, newName, newDescription, cb) {
  * 
  * @param {String} groupName 
  * @param {String} gameName
- * @param {function(Error, Result)} cb 
+ * @param {function(Error, Group, Game)} cb 
  */
 function addGameToGroup(groupName, gameName, cb) {
-    const result = {
-        gameExists: true,
-        groupExists: undefined,
-        repeatedGame: false
-    }
-
     igdb.searchGames(gameName, 1, (err, games) => {
         if (err) return cb(err)
         if (games.length == 0) {
-            result.gameExists = false
-            return cb(null, result)
+            return cb(null, null, null)
         }
 
         const game = games[0]
-        db.addGame(groupName, game.id, game.name, (err, group, game) => {
+        db.addGame(groupName, game.id, game.name, (err, group) => {
             if (err) return cb(err)
-            result.groupExists = Boolean(group)
-            result.repeatedGame = Boolean(!game)
-
-            cb(null, result)
+            cb(null, group, game)
         })
     })
 }
@@ -110,22 +104,10 @@ function addGameToGroup(groupName, gameName, cb) {
  * 
  * @param {String} groupName 
  * @param {Integer} gameId 
- * @param {function(Error, Result)} cb 
+ * @param {function(Error, Group, Game)} cb 
  */
 function deleteGameFromGroup(groupName, gameId, cb) {
-    const result = {
-        gameExists: undefined,
-        groupExists: undefined,
-        repeatedGame: undefined
-    }
-
-    db.deleteGame(groupName, gameId, (err, group, game) => {
-        if (err) return cb(err)
-        result.groupExists = Boolean(group)
-        result.gameExists = Boolean(game)
-
-        cb(null, result)
-    })
+    db.deleteGame(groupName, gameId, cb)
 }
 
 /**
@@ -166,6 +148,7 @@ function listGroupGames(groupName, minRating, maxRating, cb) {
 module.exports = {
     getTopGames,
     searchGames,
+    getGameById,
     getGroups,
     getGroup,
     addGroup,

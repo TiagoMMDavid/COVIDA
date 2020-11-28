@@ -62,5 +62,10 @@
 		"name": "ToBeAdded",
 		"description": "Group to add game in tests",
 		"games": []
+	},
+	{
+		"name": "ToBeReplaced",
+		"description": "Group to replace in tests",
+		"games": []
 	}
 ]

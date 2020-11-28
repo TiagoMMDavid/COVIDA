@@ -41,6 +41,11 @@ const EXPECTED_GROUPS = [
         name: 'ToBeAdded',
         description: 'Group to add game in tests',
         games: []
+    },
+    {
+        name: 'ToBeReplaced',
+        description: 'Group to replace in tests',
+        games: []
     }
 ]
 
@@ -98,7 +103,17 @@ test('Test groups module addGroup successfully', done => {
 })
 
 test('Test groups module addGroup with an existing group', done => {
-    groups.addGroup('Favorite', 'desc', (err, group) => {
+    groups.addGroup('ToBeReplaced', 'New description', (err, group) => {
+        expect(err).toBeFalsy()
+        expect(group.name).toBe('ToBeReplaced')
+        expect(group.description).toBe('New description')
+        expect(group.games.length).toBe(0)
+        done()
+    })
+})
+
+test('Test groups module addGroup with null name', done => {
+    groups.addGroup(null, 'N/A', (err, group) => {
         expect(err).toBeFalsy()
         expect(group).toBeFalsy()
         done()
@@ -118,9 +133,18 @@ test('Test groups module editGroup successfully', done => {
 })
 
 test('Test groups module editGroup for absent group name', done => {
-    groups.editGroup('Absent', 'newName', 'newDesc', (err, group) => {
+    groups.editGroup('Absent', 'N/A', 'N/A', (err, group) => {
         expect(err).toBeFalsy()
         expect(group).toBeFalsy()
+        done()
+    })
+})
+
+test('Test groups module editGroup for duplicate group name', done => {
+    groups.editGroup('Favorite', 'eSports', 'N/A', (err, group) => {
+        expect(err).toBeFalsy()
+        expect(group).toBeTruthy()
+        expect(group.name).toBeFalsy()
         done()
     })
 })
@@ -147,7 +171,7 @@ test('Test groups module getGames for absent group name', done => {
 })
 
 test('Test groups module addGame successfully', done => {
-    groups.addGame('ToBeAdded', 2, 'newGame', (err, group, game) => {
+    groups.addGame('ToBeAdded', 2, 'newGame', (err, group) => {
         expect(err).toBeFalsy()
 
         expect(group).toBeTruthy()
@@ -156,29 +180,29 @@ test('Test groups module addGame successfully', done => {
 
         expect(group.games[0].id).toBe(2)
         expect(group.games[0].name).toBe('newGame')
-        expect(game.id).toBe(2)
-        expect(game.name).toBe('newGame')
         done()
     })
 })
 
 test('Test groups module addGame for absent group name', done => {
-    groups.addGame('Absent', 2, 'game', (err, group, game) => {
+    groups.addGame('Absent', 2, 'game', (err, group) => {
         expect(err).toBeFalsy()
 
         expect(group).toBeFalsy()
-        expect(game).toBeFalsy()
         done()
     })
 })
 
 test('Test groups module addGame for duplicate game', done => {
-    groups.addGame('Favorite', 17269, 'Roblox', (err, group, game) => {
+    groups.addGame('Favorite', 17269, 'Roblox', (err, group) => {
         expect(err).toBeFalsy()
 
         expect(group).toBeTruthy()
         expect(group.name).toBe('Favorite')
-        expect(game).toBeFalsy()
+        const filteredGames = group.games.filter(game => game.id == 17269)
+        expect(filteredGames.length).toBe(1)
+        expect(filteredGames[0].id).toBe(17269)
+        expect(filteredGames[0].name).toBe('Roblox')
         done()
     })
 })

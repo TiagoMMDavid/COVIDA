@@ -35,6 +35,13 @@ router.get('/covida/games/top', (req, resp, next) => {
     })
 })
 
+router.get('/covida/games/:game', (req, resp, next) => {
+    service.getGameById(req.params.game, (err, game) => {
+        if (err) return next(INTERNAL_ERROR)
+        resp.json(game || {})
+    })
+})
+
 router.get('/covida/groups/:group/games', (req, resp, next) => {
     service.listGroupGames(req.params.group, req.query.min, req.query.max, (err, group, games) => {
         if (err) return next(INTERNAL_ERROR)
@@ -66,6 +73,11 @@ router.get('/covida/groups/:group', (req, resp, next) => {
             }
             return next(err)
         }
+        const host = req.headers.host
+        group.games = group.games.map(game => {
+            game.gameDetails = `http://${host}/covida/games/${game.id}`
+            return game
+        })
         resp.json(group)
     })
 })
@@ -78,21 +90,114 @@ router.get('/covida/groups', (req, resp, next) => {
 })
 
 router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
-    // TODO:
-    resp.end()
+    const groupName = req.params.group
+    const gameName = req.body.name
+    if (!gameName) {
+        const err = {
+            status: 400,
+            message: 'No game specified'
+        }
+        return next(err)
+    }
+    service.addGameToGroup(groupName, gameName, (err, group, game) => {
+        if (err) return next(INTERNAL_ERROR)
+        if (!game) {
+            const err = {
+                status: 404,
+                message: 'Game not found'
+            }
+            return next(err)
+        }
+        if (!group) {
+            const err = {
+                status: 404,
+                message: 'Group does not exist'
+            }
+            return next(err)
+        }
+        const host = req.headers.host
+        resp.status(201)
+        resp.json({
+            status: 201,
+            message: `Game '${game.name}' added to group '${group.name}' successfully`,
+            groupDetails: `http://${host}/covida/groups/${group.name}`,
+            gameDetails: `http://${host}/covida/games/${game.id}`
+        })
+    })
 })
 
 router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
-    // TODO:
-    resp.end()
+    const oldName = req.params.group
+    const newName = req.body.name
+    const newDescription = req.body.description
+
+    service.editGroup(oldName, newName, newDescription, (err, group) => {
+        if (err) return next(INTERNAL_ERROR)
+        if (!group) {
+            const err = {
+                status: 404,
+                message: 'Group does not exist'
+            }
+            return next(err)
+        }
+        if (!group.name) {
+            const err = {
+                status: 409,
+                message: `Group '${newName}' already exists`
+            }
+            return next(err)
+        }
+        const host = req.headers.host
+        resp.json({
+            status: 200,
+            message: `Group '${group.name}' edited successfully`,
+            groupDetails: `http://${host}/covida/groups/${group.name}`
+        })
+    })
 })
 
 router.put('/covida/groups', bodyParser, (req, resp, next) => {
-    // TODO:
-    resp.end()
+    const name = req.body.name
+    const description = req.body.description
+    if (!name) {
+        const err = {
+            status: 400,
+            message: 'No name specified'
+        }
+        return next(err)
+    }
+    service.addGroup(name, description, (err, group) => {
+        if (err) return next(INTERNAL_ERROR)
+        const host = req.headers.host
+        resp.status(201)
+        resp.json({
+            status: 201,
+            message: `Group '${group.name}' added successfully`,
+            groupDetails: `http://${host}/covida/groups/${group.name}`
+        })
+    })
 })
 
 router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
-    // TODO:
-    resp.end()
+    service.deleteGameFromGroup(req.params.group, req.params.game, (err, group, game) => {
+        if (err) return next(INTERNAL_ERROR)
+        if (!group) {
+            const err = {
+                status: 404,
+                message: 'Group does not exist'
+            }
+            return next(err)
+        }
+        if (!game) {
+            const err = {
+                status: 404,
+                message: `Game does not exist in group '${group.name}'`
+            }
+            return next(err)
+        }
+        resp.json({
+            status: 200,
+            message: `Game '${game.name}' removed from group '${group.name}' successfully`
+        })
+    })
 })

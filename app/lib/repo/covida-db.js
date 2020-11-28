@@ -24,7 +24,7 @@ let groupsPath = './data/groups.json'
 function getGroup(name, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
         if(err) return cb(err)
-        const groupArr = JSON.parse(buffer).filter(group => group.name == name)
+        const groupArr = JSON.parse(buffer).filter(group => group.name.toLowerCase() == name.toLowerCase())
         if(groupArr.length == 0) return cb(null, null)
         cb(null, groupArr[0])
     })
@@ -42,24 +42,22 @@ function getGroups(cb) {
 }
 
 /**
- * Add a new Group object with given name and description if it does not exist yet.
- * Returns an Error if that group already exists.
+ * Adds or replaces a Group object with given name and description.
  * @param {String} name
  * @param {String} description 
  * @param {function(Error, Group)} cb
  */
 function addGroup(name, description, cb) {
+    if (!name) return cb(null, null)
+    
     fs.readFile(groupsPath, (err, buffer) => {
         if (err) return cb(err)
 
-        const groups = JSON.parse(buffer)
-
-        // Check if group already exists
-        if (groups.filter(group => group.name == name).length != 0)
-            return cb(null, null)
-
+        // Filters out group with the same name, for replacement
+        const groups = JSON.parse(buffer).filter(group => group.name.toLowerCase() != name.toLowerCase())
+        
         // Add new Group
-        const newGroup = {'name': name, 'description': description, 'games': []}
+        const newGroup = {'name': name, 'description': description || '', 'games': []}
         groups.push(newGroup)
 
         fs.writeFile(groupsPath, JSON.stringify(groups, null, '\t'), (err) => {
@@ -79,14 +77,19 @@ function addGroup(name, description, cb) {
 function editGroup(previousName, newName, newDescription, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
         if(err) return cb(err)
-
+        
         const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name == previousName)
+        
+        // In case the newName is already in the database, return a Group object with a null name
+        if(groupArr.filter(group => group.name.toLowerCase() == newName.toLowerCase()).length != 0) {
+            return cb(null, {'name' : null})
+        }
+        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == previousName.toLowerCase())
         if(desiredGroup.length == 0) return cb(null, null)
         
         const group = desiredGroup[0]
-        group.name = newName
-        group.description = newDescription
+        group.name = newName || previousName
+        group.description = newDescription || group.description
 
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
             if (err) return cb(err)
@@ -112,25 +115,23 @@ function getGames(groupName, cb) {
 /**
  * Adds a new game to the array of games of the Group with 
  * given name.
- * It does not verify repetitions amongst games.
+ * Repeated games are replaced.
  * 
  * @param {String} groupName 
  * @param {Integer} gameId 
  * @param {String} gameName
- * @param {function(Error, Group, Game)} cb
+ * @param {function(Error, Group)} cb
  */
 function addGame(groupName, gameId, gameName, cb) {
     fs.readFile(groupsPath, (err, buffer) => {
         if(err) return cb(err)
 
         const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name == groupName)
-        if(desiredGroup.length == 0) return cb(null, null, null)
+        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == groupName.toLowerCase())
+        if(desiredGroup.length == 0) return cb(null, null)
         
         const group = desiredGroup[0]
-        // Check if game already exists
-        if (group.games.filter(game => game.id == gameId).length != 0)
-            return cb(null, group, null)
+        group.games = group.games.filter(game => game.id != gameId)
 
         const game = {
             id: gameId,
@@ -140,7 +141,7 @@ function addGame(groupName, gameId, gameName, cb) {
 
         fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
             if (err) return cb(err)
-            cb(null, group, game)
+            cb(null, group)
         })
     })
 }
@@ -158,7 +159,7 @@ function deleteGame(groupName, gameId, cb) {
         if(err) return cb(err)
 
         const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name == groupName)
+        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == groupName.toLowerCase())
         if(desiredGroup.length == 0) return cb(null, null, null)
         
         const group = desiredGroup[0]
