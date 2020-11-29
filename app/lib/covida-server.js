@@ -6,7 +6,7 @@ const routes = require('./routes/covida-web-api')
 const PORT = 8000
 
 if(process.argv.length > 2) {
-    require('./repo/igdb-data').init(process.argv[2])
+    require('./repo/covida-db').init(process.argv[2])
 }
 
 const app = express()
@@ -16,4 +16,7 @@ app.use((err, req, resp, next) => {
     resp.status(err.status || 500)
     resp.json(err)
 })
-app.listen(PORT, () => console.log(`Listening for HTTP requests on port ${PORT}`))
+app.listen(PORT, () => {
+    console.log(`Listening for HTTP requests on port ${PORT}`)
+    if (process.send) process.send({ webRunning: true })
+})

@@ -1,11 +1,11 @@
 [
 	{
 		"name": "Favorite",
-		"description": "Group for our favourite games",
+		"description": "Group for our favorite games",
 		"games": [
 			{
 				"id": 17269,
-				"name": "ROBLOX"
+				"name": "Roblox"
 			},
 			{
 				"id": 1905,
@@ -14,10 +14,6 @@
 			{
 				"id": 135400,
 				"name": "Minecraft"
-			},
-			{
-				"id": 2800,
-				"name": "Ben 10: Omniverse"
 			}
 		]
 	},
@@ -31,7 +27,7 @@
 			},
 			{
 				"id": 126459,
-				"name": "VALORANT"
+				"name": "Valorant"
 			},
 			{
 				"id": 115,
@@ -48,8 +44,28 @@
 		]
 	},
 	{
-		"name": "I AM SPACE MAN",
-		"description": "",
+		"name": "ToBeEdited",
+		"description": "Group to be edited in tests",
+		"games": []
+	},
+	{
+		"name": "ToBeRemoved",
+		"description": "Group to remove game in tests",
+		"games": [
+			{
+				"id": 1,
+				"name": "Remove me"
+			}
+		]
+	},
+	{
+		"name": "ToBeAdded",
+		"description": "Group to add game in tests",
+		"games": []
+	},
+	{
+		"name": "ToBeReplaced",
+		"description": "Group to replace in tests",
 		"games": []
 	}
 ]

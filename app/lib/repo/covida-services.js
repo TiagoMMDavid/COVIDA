@@ -31,6 +31,7 @@ function searchGames(gameName, limit, cb) {
  * @param {function(Error, GameDetail)} cb 
  */
 function getGameById(gameId, cb) {
+    if (!gameId) cb(null, null)
     igdb.getGamesByIds([gameId], (err, games) => {
         if (err) return cb(err)
         if (games.length == 0) return cb(null, null)
@@ -42,7 +43,16 @@ function getGameById(gameId, cb) {
  * @param {function(Error, Array<Group>)} cb 
  */
 function getGroups(cb) {
-    db.getGroups(cb)
+    db.getGroups((err, groups) => {
+        if (err) return cb(err)
+        groups = groups.map(group => {
+            return {
+                name: group.name,
+                description: group.description
+            }
+        })
+        cb(null, groups)
+    })
 }
 
 /**

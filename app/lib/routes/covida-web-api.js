@@ -1,7 +1,6 @@
 'use strict'
 
-const Router = require('express').Router
-const router = Router()
+const router = require('express').Router()
 const bodyParser = require('body-parser').urlencoded({ extended: false })
 const service = require('./../repo/covida-services')
 
@@ -31,6 +30,13 @@ router.get('/covida/games/search', (req, resp, next) => {
 router.get('/covida/games/top', (req, resp, next) => {
     service.getTopGames(req.query.limit, (err, games) => {
         if (err) return next(INTERNAL_ERROR)
+        if (!games) {
+            const err = {
+                status: 400,
+                message: 'Invalid limit specified. Must be between 0 and 500'
+            }
+            return next(err)
+        }
         resp.json(games)
     })
 })
@@ -38,7 +44,14 @@ router.get('/covida/games/top', (req, resp, next) => {
 router.get('/covida/games/:game', (req, resp, next) => {
     service.getGameById(req.params.game, (err, game) => {
         if (err) return next(INTERNAL_ERROR)
-        resp.json(game || {})
+        if (!game) {
+            const err = {
+                status: 404,
+                message: 'Game does not exist'
+            }
+            return next(err)
+        }
+        resp.json(game)
     })
 })
 
@@ -85,7 +98,20 @@ router.get('/covida/groups/:group', (req, resp, next) => {
 router.get('/covida/groups', (req, resp, next) => {
     service.getGroups((err, groups) => {
         if (err) return next(INTERNAL_ERROR)
+        const host = req.headers.host
+        groups = groups.map(group => {
+            group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.name}`)
+            return group
+        })
         resp.json(groups)
+    })
+})
+
+router.get('/covida', (req, resp, next) => {
+    const host = req.headers.host
+    resp.json({
+        topGames: `http://${host}/covida/games/top`,
+        getGroups: `http://${host}/covida/groups`
     })
 })
 
@@ -120,7 +146,7 @@ router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
         resp.json({
             status: 201,
             message: `Game '${game.name}' added to group '${group.name}' successfully`,
-            groupDetails: `http://${host}/covida/groups/${group.name}`,
+            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`),
             gameDetails: `http://${host}/covida/games/${game.id}`
         })
     })
@@ -130,6 +156,14 @@ router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
     const oldName = req.params.group
     const newName = req.body.name
     const newDescription = req.body.description
+
+    if (!newName && !newDescription) {
+        const err = {
+            status: 400,
+            message: 'No new description or name specified'
+        }
+        return next(err)
+    }
 
     service.editGroup(oldName, newName, newDescription, (err, group) => {
         if (err) return next(INTERNAL_ERROR)
@@ -150,8 +184,8 @@ router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
         const host = req.headers.host
         resp.json({
             status: 200,
-            message: `Group '${group.name}' edited successfully`,
-            groupDetails: `http://${host}/covida/groups/${group.name}`
+            message: `Group '${oldName}' edited successfully`,
+            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`)
         })
     })
 })
@@ -173,7 +207,7 @@ router.put('/covida/groups', bodyParser, (req, resp, next) => {
         resp.json({
             status: 201,
             message: `Group '${group.name}' added successfully`,
-            groupDetails: `http://${host}/covida/groups/${group.name}`
+            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`)
         })
     })
 })

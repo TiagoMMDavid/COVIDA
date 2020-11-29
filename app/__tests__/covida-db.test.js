@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 'use strict'
 
-const GROUPS_PATH = './__tests__/mocks/groups.json'
+const GROUPS_PATH = './__tests__/mocks/groups-db.json'
 
 const groups = require('./../lib/repo/covida-db').init(GROUPS_PATH)
 const fs = require('fs')
@@ -48,6 +48,10 @@ const EXPECTED_GROUPS = [
         games: []
     }
 ]
+
+beforeAll(() => {
+    fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
+})
 
 test('Test groups module getGroup successfully', done => {
     groups.getGroup('Favorite', (err, group) => {
@@ -241,10 +245,6 @@ test('Test groups module deleteGame for absent game', done => {
         expect(game).toBeFalsy()
         done()
     })
-})
-
-beforeAll(() => {
-    fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
 })
 
 afterAll(() => {

@@ -4,10 +4,10 @@
 const TOPGAMES_MOCK_PATH = './__tests__/mocks/topgames.json'
 const SEARCHGAMES_FORTNITE_MOCK_PATH = './__tests__/mocks/searchgames-fortnite.json'
 const SEARCHGAMES_EMPTY_MOCK_PATH = './__tests__/mocks/searchgames-empty.json'
-const SEARCHGAMES_GET_GAME_BY_ID_PATH = './__tests__/mocks/getgamebyid-1-and-2.json'
+const GET_GAME_BY_ID_PATH = './__tests__/mocks/getgamebyid-1-and-2.json'
 
 const igdb = require('./../lib/repo/igdb-data')
-const urlib = require('urllib')
+const urllib = require('urllib')
 const fs = require('fs')
 
 jest.mock('urllib')
@@ -19,7 +19,7 @@ const expectedTopThreeGames = [
 ]
 
 test('Test igdb-data module getTopGames successfully', done => {
-    urlib.request.mockImplementationOnce((url, options, cb) => {
+    urllib.request.mockImplementationOnce((url, options, cb) => {
         fs.readFile(TOPGAMES_MOCK_PATH, cb)
     })
 
@@ -33,7 +33,7 @@ test('Test igdb-data module getTopGames successfully', done => {
 })
 
 test('Test igdb-data module searchGames successfully', done => {
-    urlib.request.mockImplementationOnce((url, options, cb) => {
+    urllib.request.mockImplementationOnce((url, options, cb) => {
         fs.readFile(SEARCHGAMES_FORTNITE_MOCK_PATH, cb)
     })
 
@@ -45,7 +45,7 @@ test('Test igdb-data module searchGames successfully', done => {
 })
 
 test('Test igdb-data module searchGames empty', done => {
-    urlib.request.mockImplementationOnce((url, options, cb) => {
+    urllib.request.mockImplementationOnce((url, options, cb) => {
         fs.readFile(SEARCHGAMES_EMPTY_MOCK_PATH, cb)
     })
 
@@ -57,8 +57,8 @@ test('Test igdb-data module searchGames empty', done => {
 })
 
 test('Test igdb-data module getGamesByIds successfully', done => {
-    urlib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(SEARCHGAMES_GET_GAME_BY_ID_PATH, cb)
+    urllib.request.mockImplementationOnce((url, options, cb) => {
+        fs.readFile(GET_GAME_BY_ID_PATH, cb)
     })
 
     igdb.getGamesByIds([1, 2], (err, games) => {

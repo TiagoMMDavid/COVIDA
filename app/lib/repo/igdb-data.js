@@ -12,6 +12,8 @@ const IGDB_SEARCH = 'search'
 const IGDB_GET_GAMES_BY_IDS = 'sort total_rating desc; where id ='
 const IGDB_BODY_FIELDS_LIMIT = 'limit'
 
+const IGDB_MAX_LIMIT = 500
+
 /**
  * @typedef GameDetail
  * @property {Integer} id
@@ -26,6 +28,10 @@ const IGDB_BODY_FIELDS_LIMIT = 'limit'
  * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array with game names or Error if not succeeded
  */
 function getTopGames(limit, cb) {
+    if (limit > IGDB_MAX_LIMIT || limit < 0) {
+        return cb(null, null)
+    }
+    
     const options = {
         method: 'POST',
         headers: {
@@ -70,7 +76,7 @@ function searchGames(game, limit, cb) {
  * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
  */
 function getGamesByIds(ids, cb) {
-    if (ids.length == 0)
+    if (!ids || ids.length == 0)
         return cb(null, [])
 
     let formattedIds = '('

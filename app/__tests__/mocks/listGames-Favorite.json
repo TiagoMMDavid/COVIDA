@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1905,
+        "follows": 280,
+        "name": "Fortnite",
+        "summary": "Fortnite is the living, action building game from the developer formerly known as Epic MegaGames. You and your friends will lead a group of Heroes to reclaim and rebuild a homeland that has been left empty by mysterious darkness only known as \"the Storm\". \n \nBand together online to build extravagant forts, find or build insane weapons and traps and protect your towns from the strange monsters that emerge during the Storm. In an action experience from the only company smart enough to attach chainsaws to guns, get out there to push back the Storm and save the world. And don't forget to loot all the things.",
+        "total_rating": 75.50220465952715
+    },
+    {
+        "id": 17269,
+        "follows": 45,
+        "name": "ROBLOX",
+        "summary": "Rōblox, stylized as RŌBLOX, is a massively multiplayer online game created and marketed toward children and teenagers aged 8–18. In the game, players are able to create their own virtual world, in which they or other members may enter and socialize within the blocks of varying shapes, sizes, and colors.[3] Games on Roblox can be scripted using a sandboxed edition of Lua 5.1 to affect events that occur in-game and create different scenarios. The company's main source of revenue comes from players buying Robux, the main virtual currency in the game, and from players buying \"Builders Club\" access, a status which gives virtual benefits to users. Players who have created an account may purchase either Builders Club, Turbo Builders Club, or Outrageous Builders Club, otherwise known by users as BC, TBC, and OBC, respectively.[4]",
+        "total_rating": 73.2117981273685
+    },
+	{
+        "id": 135400,
+        "follows": 8,
+        "name": "Minecraft",
+        "summary": "Minecraft focuses on allowing the player to explore, interact with, and modify a dynamically-generated map made of one-cubic-meter-sized blocks. In addition to blocks, the environment features plants, mobs, and items. Some activities in the game include mining for ore, fighting hostile mobs, and crafting new blocks and tools by gathering various resources found in the game. The game's open-ended model allows players to create structures, creations, and artwork on various multiplayer servers or their single-player maps. Other features include redstone circuits for logic computations and remote actions, minecarts and tracks, and a mysterious underworld called the Nether. A designated but completely optional goal of the game is to travel to a dimension called the End, and defeat the ender dragon. \n \nAll Bedrock editions of Minecraft use the title Minecraft with no subtitle. Before the Better Together Update, they had different subtitles on each platform, including Pocket Edition (for all mobile platforms), Windows 10 Edition, Gear VR Edition, and Fire TV Edition. Xbox One Edition, Nintendo Switch Edition, and PlayStation 4 Edition were originally part of Legacy Console Edition before the Better Together Update, and their features had to be ported to Bedrock Edition. Apple TV Edition was discontinued shortly afterwards, thus it was no longer updated and removed from the App Store on Apple TV devices. Although all Bedrock versions are nearly identical, the price varies depending on the platform. Approximate prices are listed in USD; Mobile versions cost US$6.99 (€7.99, £6.99, AU$10.99). PlayStation 4, Xbox One, and Fire TV cost US$19.99 (€19.99, £16.74, AU$29.95). The Windows 10 and Nintendo Switch versions are the most expensive, costing US$29.99 (€19.99, £16.74, AU$39.95). The Windows 10 version is sold in a Starter Collection or Master Collection, the latter costing US$49.99 (€49.99, £39.99, AU$69.95) and including more DLC and Minecoins.[33] DLC purchased from the Marketplace on one platform is usable on all other platforms, but the game itself is sold separately on each platform. Despite all being UWP apps, Minecraft is sold as 3 separate apps at different prices on Windows 10, Windows 10 Mobile, and Xbox One. (This means that Xbox Live achievements are not shared between these platforms and buying the game on one of these platforms does not get the game on the others. There are sets of achievements for each platform). The Xbox One version is also playable to Xbox Game Pass subscribers. As with Java Edition, updates are free of charge"
+    }
+]
