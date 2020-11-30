@@ -24,8 +24,9 @@ const IGDB_MAX_LIMIT = 500
  */
 
 /**
+ * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array with game names or Error if not succeeded
+ * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array of GameDetail or Error if not succeeded
  */
 function getTopGames(limit, cb) {
     if (limit > IGDB_MAX_LIMIT || limit < 0) {
@@ -49,9 +50,10 @@ function getTopGames(limit, cb) {
 }
 
 /**
+ * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
+ * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given name (can be empty)
  */
 function searchGames(game, limit, cb) {
     const options = {
@@ -71,9 +73,9 @@ function searchGames(game, limit, cb) {
 }
 
 /** 
- * Gets the games with given id. The array returned is sorted by rating, from highest to lowest.
- * @param {Array<Integer>} ids ids of game
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
+ * Gets the games with given ids. The array returned is sorted by rating, from highest to lowest
+ * @param {Array<Integer>} ids ids of games
+ * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given ids (can be empty)
  */
 function getGamesByIds(ids, cb) {
     if (!ids || ids.length == 0)

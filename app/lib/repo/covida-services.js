@@ -8,27 +8,28 @@ const MIN_RATING = 0
 const MAX_RATING = 100
 
 /**
- * Returns an array with limit top games.
- * 
- * @param {Number} limit 
- * @param {function(Error, Array<GameDetail>)} cb 
+ * Function to get the current top games of IGDB
+ * @param {Number} limit limit of results
+ * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array of GameDetail or Error if not succeeded
  */
 function getTopGames(limit, cb) {
     igdb.getTopGames(limit || DEFAULT_LIMIT, cb)
 }
 
 /**
+ * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of Game objects with given name (can be empty).
+ * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given name (can be empty)
  */
 function searchGames(gameName, limit, cb) {
     igdb.searchGames(gameName, limit || DEFAULT_LIMIT, cb)
 }
 
-/**
- * @param {Integer} gameId 
- * @param {function(Error, GameDetail)} cb 
+/** 
+ * Gets the game with given id. 
+ * @param {Integer} gameId id of game
+ * @param {function(Error, GameDetail)} cb Callback receives a GameDetail object with given id (can be null)
  */
 function getGameById(gameId, cb) {
     if (!gameId) cb(null, null)
@@ -40,6 +41,7 @@ function getGameById(gameId, cb) {
 }
 
 /**
+ * Gets all groups in the database
  * @param {function(Error, Array<Group>)} cb 
  */
 function getGroups(cb) {
@@ -56,6 +58,7 @@ function getGroups(cb) {
 }
 
 /**
+ * Gets the group with the given name
  * @param {String} name 
  * @param {function(Error, Group)} cb 
  */
@@ -64,7 +67,7 @@ function getGroup(name, cb) {
 }
 
 /**
- * Adds or replaces a Group object with given name and description.
+ * Adds or replaces a Group object with given name and description
  * @param {String} name
  * @param {String} description 
  * @param {function(Error, Group)} cb
@@ -85,13 +88,12 @@ function editGroup(previousName, newName, newDescription, cb) {
 }
 
 /**
- * Adds a new game to the array of games of the Group with 
- * given name.
- * It does not verify repetitions amongst games.
- * 
+ * Adds a new game to the array of games of the Group with given name
+ * If the game already exists in the given group, it is replaced instead
+ * If the game doesn't exist the callback function receives every parameter as null
  * @param {String} groupName 
  * @param {String} gameName
- * @param {function(Error, Group, Game)} cb 
+ * @param {function(Error, Group, Game)} cb
  */
 function addGameToGroup(groupName, gameName, cb) {
     igdb.searchGames(gameName, 1, (err, games) => {
@@ -109,21 +111,17 @@ function addGameToGroup(groupName, gameName, cb) {
 }
 
 /**
- * Deletes a game from the array of games of the Group with 
- * given name.
- * 
+ * Delete a game from the array of games of the Group with given name
  * @param {String} groupName 
  * @param {Integer} gameId 
- * @param {function(Error, Group, Game)} cb 
+ * @param {function(Error, Group, Game)} cb
  */
 function deleteGameFromGroup(groupName, gameId, cb) {
     db.deleteGame(groupName, gameId, cb)
 }
 
 /**
- * Deletes a game from the array of games of the Group with 
- * given name.
- * 
+ * Lists the games from a given group ordered by total_rating
  * @param {String} groupName 
  * @param {Number} minRating
  * @param {Number} maxRating  

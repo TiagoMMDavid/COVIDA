@@ -1,7 +1,6 @@
 'use strict'
 
 const fs = require('fs')
-
 let groupsPath = './data/groups.json'
 
 /**
@@ -14,10 +13,24 @@ let groupsPath = './data/groups.json'
  * @typedef Group
  * @property {String} name
  * @property {String} description
- * @property {Array<Game>} games Array of strings with games names.
+ * @property {Array<Game>} games
  */
 
+
 /**
+ * Gets all groups in the database
+ * @param {function(Error, Array<Group>)} cb 
+ */
+function getGroups(cb) {
+    fs.readFile(groupsPath, (err, buffer) => {
+        if(err) return cb(err)
+        const groups = JSON.parse(buffer)
+        cb(null, groups)
+    })
+}
+
+/**
+ * Gets the group with the given name
  * @param {String} name 
  * @param {function(Error, Group)} cb 
  */
@@ -31,18 +44,7 @@ function getGroup(name, cb) {
 }
 
 /**
- * @param {function(Error, Array<Group>)} cb 
- */
-function getGroups(cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-        const groups = JSON.parse(buffer)
-        cb(null, groups)
-    })
-}
-
-/**
- * Adds or replaces a Group object with given name and description.
+ * Adds or replaces a Group object with given name and description
  * @param {String} name
  * @param {String} description 
  * @param {function(Error, Group)} cb
@@ -115,10 +117,8 @@ function getGames(groupName, cb) {
 }
 
 /**
- * Adds a new game to the array of games of the Group with 
- * given name.
- * Repeated games are replaced.
- * 
+ * Adds a new game to the array of games of the Group with given name
+ * If the gameId already exists in the given group, it is replaced instead
  * @param {String} groupName 
  * @param {Integer} gameId 
  * @param {String} gameName
@@ -149,9 +149,7 @@ function addGame(groupName, gameId, gameName, cb) {
 }
 
 /**
- * Delete a game from the array of games of the Group with 
- * given name. Deletes repeated games. 
- * 
+ * Delete a game from the array of games of the Group with given name
  * @param {String} groupName 
  * @param {Integer} gameId 
  * @param {function(Error, Group, Game)} cb
