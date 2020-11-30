@@ -56,6 +56,10 @@ function getTopGames(limit, cb) {
  * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given name (can be empty)
  */
 function searchGames(game, limit, cb) {
+    if (limit > IGDB_MAX_LIMIT || limit < 0) {
+        return cb(null, null)
+    }
+
     const options = {
         method: 'POST',
         headers: {

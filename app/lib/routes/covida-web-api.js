@@ -16,6 +16,13 @@ router.get('/covida/games/search', (req, resp, next) => {
     if (name) {
         service.searchGames(name, req.query.limit, (err, games) => {
             if (err) return next(INTERNAL_ERROR)
+            if (!games) {
+                const err = {
+                    status: 400,
+                    message: 'Invalid limit specified. Must be between 0 and 500'
+                }
+                return next(err)
+            }
             resp.json(games)
         })
     } else {
