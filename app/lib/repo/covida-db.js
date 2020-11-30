@@ -79,14 +79,15 @@ function editGroup(previousName, newName, newDescription, cb) {
         if(err) return cb(err)
         
         const groupArr = JSON.parse(buffer)
+        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == previousName.toLowerCase())
+        if(desiredGroup.length == 0) return cb(null, null)
+
         if (newName) {
             // In case the newName is already in the database, return a Group object with a null name
             if(groupArr.filter(group => group.name.toLowerCase() == newName.toLowerCase()).length != 0) {
                 return cb(null, {'name' : null})
             }
         }
-        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == previousName.toLowerCase())
-        if(desiredGroup.length == 0) return cb(null, null)
         
         const group = desiredGroup[0]
         group.name = newName || previousName
