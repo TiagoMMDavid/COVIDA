@@ -14,17 +14,18 @@ const INTERNAL_ERROR = {
 router.get('/covida/games/search', (req, resp, next) => {
     const name = req.query.name
     if (name) {
-        service.searchGames(name, req.query.limit, (err, games) => {
-            if (err) return next(INTERNAL_ERROR)
-            if (!games) {
-                const err = {
-                    status: 400,
-                    message: 'Invalid limit specified. Must be between 0 and 500'
+        service.searchGames(name, req.query.limit)
+            .then(games => {
+                if (!games) {
+                    const err = {
+                        status: 400,
+                        message: 'Invalid limit specified. Must be between 0 and 500'
+                    }
+                    return next(err)
                 }
-                return next(err)
-            }
-            resp.json(games)
-        })
+                resp.json(games)
+            })
+            .catch(err => next(INTERNAL_ERROR))
     } else {
         const err = {
             status: 400,
@@ -35,31 +36,33 @@ router.get('/covida/games/search', (req, resp, next) => {
 })
 
 router.get('/covida/games/top', (req, resp, next) => {
-    service.getTopGames(req.query.limit, (err, games) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!games) {
-            const err = {
-                status: 400,
-                message: 'Invalid limit specified. Must be between 0 and 500'
+    service.getTopGames(req.query.limit)
+        .then(games => {
+            if (!games) {
+                const err = {
+                    status: 400,
+                    message: 'Invalid limit specified. Must be between 0 and 500'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        resp.json(games)
-    })
+            resp.json(games)
+        })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.get('/covida/games/:game', (req, resp, next) => {
-    service.getGameById(req.params.game, (err, game) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!game) {
-            const err = {
-                status: 404,
-                message: 'Game does not exist'
+    service.getGameById(req.params.game)
+        .then(game => {
+            if (!game) {
+                const err = {
+                    status: 404,
+                    message: 'Game does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        resp.json(game)
-    })
+            resp.json(game)
+        })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.get('/covida/groups/:group/games', (req, resp, next) => {

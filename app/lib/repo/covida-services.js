@@ -10,33 +10,33 @@ const MAX_RATING = 100
 /**
  * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array of GameDetail or Error if not succeeded
+ * @returns A promise containing an array of GameDetail or Error if not succeeded
  */
-function getTopGames(limit, cb) {
-    igdb.getTopGames(limit || DEFAULT_LIMIT, cb)
+function getTopGames(limit) {
+    return igdb.getTopGames(limit || DEFAULT_LIMIT)
 }
 
 /**
  * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given name (can be empty)
+ * @returns {Promise} A promise containing an array of GameDetail objects with given name (can be empty)
  */
-function searchGames(gameName, limit, cb) {
-    igdb.searchGames(gameName, limit || DEFAULT_LIMIT, cb)
+function searchGames(gameName, limit) {
+    return igdb.searchGames(gameName, limit || DEFAULT_LIMIT)
 }
 
 /** 
  * Gets the game with given id. 
  * @param {Integer} gameId id of game
- * @param {function(Error, GameDetail)} cb Callback receives a GameDetail object with given id (can be null)
+ * @returns {Promise} A promise containing a GameDetail object with given ids (can be null)
  */
-function getGameById(gameId, cb) {
-    if (!gameId) cb(null, null)
-    igdb.getGamesByIds([gameId], (err, games) => {
-        if (err) return cb(err)
-        if (games.length == 0) return cb(null, null)
-        cb(null, games[0])
+function getGameById(gameId) {
+    if (!gameId) return Promise.resolve().then(() => null)
+
+    return igdb.getGamesByIds([gameId]).then(games => {
+        if (games.length == 0) return null
+        return games[0]
     })
 }
 

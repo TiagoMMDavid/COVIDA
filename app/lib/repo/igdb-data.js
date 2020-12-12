@@ -1,6 +1,6 @@
 'use strict'
 
-const urllib = require('urllib')
+const fetch = require('node-fetch')
 
 const IGDB_HOST = 'https://api.igdb.com/v4/games'
 const IGDB_CLIENT_ID = process.env.COVIDA_CLIENT_ID
@@ -26,11 +26,11 @@ const IGDB_MAX_LIMIT = 500
 /**
  * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receiving an array of GameDetail or Error if not succeeded
+ * @returns {Promise} A promise containing an array of GameDetail or Error if not succeeded
  */
-function getTopGames(limit, cb) {
+function getTopGames(limit) {
     if (limit > IGDB_MAX_LIMIT || limit < 0) {
-        return cb(null, null)
+        return Promise.resolve().then(() => null)
     }
     
     const options = {
@@ -40,24 +40,21 @@ function getTopGames(limit, cb) {
             'Authorization': IGDB_AUTHORIZATION_HEADER,
             'Accept': 'application/json'
         },
-        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_TOP_GAMES} ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
+        body: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_TOP_GAMES} ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
     }
-    urllib.request(IGDB_HOST, options, (err, data, res) => {
-        if(err) return cb(err)
-        const obj = JSON.parse(data)
-        cb(null, obj)
-    })
+
+    return fetch(IGDB_HOST, options).then(res => res.json())
 }
 
 /**
  * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given name (can be empty)
+ * @returns {Promise} A promise containing an array of GameDetail objects with given name (can be empty)
  */
-function searchGames(game, limit, cb) {
+function searchGames(game, limit) {
     if (limit > IGDB_MAX_LIMIT || limit < 0) {
-        return cb(null, null)
+        return Promise.resolve().then(() => null)
     }
 
     const options = {
@@ -67,23 +64,20 @@ function searchGames(game, limit, cb) {
             'Authorization': IGDB_AUTHORIZATION_HEADER,
             'Accept': 'application/json'
         },
-        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_SEARCH} "${game}"; ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
+        body: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_SEARCH} "${game}"; ${IGDB_BODY_FIELDS_LIMIT} ${limit};`
     }
-    urllib.request(IGDB_HOST, options, (err, data, res) => {
-        if(err) return cb(err)
-        const obj = JSON.parse(data)
-        cb(null, obj)
-    })
+
+    return fetch(IGDB_HOST, options).then(res => res.json())
 }
 
 /** 
  * Gets the games with given ids. The array returned is sorted by rating, from highest to lowest
  * @param {Array<Integer>} ids ids of games
- * @param {function(Error, Array<GameDetail>)} cb Callback receives an array of GameDetail objects with given ids (can be empty)
+ * @returns {Promise} A promise containing an array of GameDetail objects with given ids (can be empty)
  */
-function getGamesByIds(ids, cb) {
+function getGamesByIds(ids) {
     if (!ids || ids.length == 0)
-        return cb(null, [])
+        return Promise.resolve().then(() => [])
 
     let formattedIds = '('
     ids.forEach((id, index) => {
@@ -100,14 +94,10 @@ function getGamesByIds(ids, cb) {
             'Authorization': IGDB_AUTHORIZATION_HEADER,
             'Accept': 'application/json'
         },
-        content: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_GET_GAMES_BY_IDS} ${formattedIds};`
+        body: `${IGDB_COMMON_BODY_FIELDS} ${IGDB_GET_GAMES_BY_IDS} ${formattedIds};`
     }
     
-    urllib.request(IGDB_HOST, options, (err, data, res) => {
-        if(err) return cb(err)
-        const obj = JSON.parse(data)
-        cb(null, obj)
-    })
+    return fetch(IGDB_HOST, options).then(res => res.json())
 }
 
 module.exports = {

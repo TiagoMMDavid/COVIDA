@@ -11,10 +11,12 @@ const LISTGAMES_FAVORITE = './__tests__/mocks/listGames-Favorite.json'
 
 require('./../lib/repo/covida-db').init(GROUPS_PATH)
 const service = require('./../lib/repo/covida-services')
-const urllib = require('urllib')
+const fetch = require('node-fetch')
+//DELETE BELOW
+
 const fs = require('fs')
 
-jest.mock('urllib')
+jest.mock('node-fetch')
 
 const expectedTopThreeGames = [
     'Grand Theft Auto V',
@@ -89,106 +91,132 @@ beforeAll(() => {
     fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
 })
 
-test('Test covida-services module getTopGames successfully', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(TOPGAMES_MOCK_PATH, cb)
+function getPromiseForFetchMock(path) {
+    return Promise.resolve().then(() => {
+        const toReturn = {
+            json: function() {
+                return JSON.parse(fs.readFileSync(path))
+            }
+        }
+        return toReturn
     })
+}
 
-    service.getTopGames(expectedTopThreeGames.length, (err, games) => {
-        expect(err).toBeFalsy()
-        expectedTopThreeGames.forEach((game, i) => {
-            expect(game).toBe(games[i].name)
+test('Test covida-services module getTopGames successfully', done => {
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(TOPGAMES_MOCK_PATH))
+
+    service.getTopGames(expectedTopThreeGames.length)
+        .then(games => {
+            expectedTopThreeGames.forEach((game, i) => {
+                expect(game).toBe(games[i].name)
+            })
+            done()
         })
-        done()
-    })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test covida-services module getTopGames with null limit', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(TOPGAMES_MOCK_PATH, cb)
-    })
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(TOPGAMES_MOCK_PATH))
 
-    service.getTopGames(null, (err, games) => {
-        expect(err).toBeFalsy()
-        expectedTopThreeGames.forEach((game, i) => {
-            expect(game).toBe(games[i].name)
+    service.getTopGames(null)
+        .then(games => {
+            expectedTopThreeGames.forEach((game, i) => {
+                expect(game).toBe(games[i].name)
+            })
+            done()
         })
-        done()
-    })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test covida-services module searchGames successfully', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(SEARCHGAMES_FORTNITE_MOCK_PATH, cb)
-    })
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(SEARCHGAMES_FORTNITE_MOCK_PATH))
 
-    service.searchGames('Fortnite', 1, (err, games) => {
-        expect(err).toBeFalsy()
-        expect(games[0].name).toBe('Fortnite')
-        done()
-    })
+    service.searchGames('Fortnite', 1)
+        .then(games => {
+            expect(games[0].name).toBe('Fortnite')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test covida-services module searchGames with null limit', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(SEARCHGAMES_FORTNITE_MOCK_PATH, cb)
-    })
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(SEARCHGAMES_FORTNITE_MOCK_PATH))
 
-    service.searchGames('Fortnite', null, (err, games) => {
-        expect(err).toBeFalsy()
-        expect(games[0].name).toBe('Fortnite')
-        done()
-    })
+    service.searchGames('Fortnite', null)
+        .then(games => {
+            expect(games[0].name).toBe('Fortnite')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test covida-services module searchGames empty', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(SEARCHGAMES_EMPTY_MOCK_PATH, cb)
-    })
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(SEARCHGAMES_EMPTY_MOCK_PATH))
 
-    service.searchGames('nonexistent_game', 1, (err, games) => {
-        expect(err).toBeFalsy()
-        expect(games.length == 0).toBeTruthy()
-        done()
-    })
+    service.searchGames('nonexistent_game', 1)
+        .then(games => {
+            expect(games.length == 0).toBeTruthy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 
 test('Test covida-services module getGameById successfully', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(GET_GAME_BY_ID_PATH, cb)
-    })
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(GET_GAME_BY_ID_PATH))
 
-    service.getGameById(1, (err, game) => {
-        expect(err).toBeFalsy()
-
-        expect(game).toBeTruthy()
-        expect(game.id).toBe(1)
-        expect(game.name).toBe('Thief II: The Metal Age')
-
-        done()
-    })
+    service.getGameById(1)
+        .then(game => {
+            expect(game.id).toBe(1)
+            expect(game.name).toBe('Thief II: The Metal Age')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 
 test('Test covida-services module getGameById null game', done => {
-    service.getGameById(null, (err, game) => {
-        expect(err).toBeFalsy()
-        expect(game).toBeFalsy()
-        done()
-    })
+    service.getGameById(null)
+        .then(game => {
+            expect(game).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test covida-services module getGameById non existant game', done => {
-    urllib.request.mockImplementationOnce((url, options, cb) => {
-        fs.readFile(SEARCHGAMES_EMPTY_MOCK_PATH, cb)
-    })
+test('Test covida-services module getGameById non existent game', done => {
+    fetch.mockImplementationOnce((url, options) => getPromiseForFetchMock(SEARCHGAMES_EMPTY_MOCK_PATH))
 
-    service.getGameById(0, (err, game) => {
-        expect(err).toBeFalsy()
-        expect(game).toBeFalsy()
-        done()
-    })
+    service.getGameById(0)
+        .then(game => {
+            expect(game).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test covida-services module getGroups successfully', done => {

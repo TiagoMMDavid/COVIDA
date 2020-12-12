@@ -1,7 +1,5 @@
 'use strict'
-
-const fs = require('fs')
-let groupsPath = './data/groups.json'
+const fetch = require('node-fetch')
 
 /**
  * @typedef Game
@@ -11,141 +9,230 @@ let groupsPath = './data/groups.json'
 
 /**
  * @typedef Group
+ * @property {String} id
  * @property {String} name
  * @property {String} description
  * @property {Array<Game>} games
  */
 
-
 /**
- * Gets all groups in the database
- * @param {function(Error, Array<Group>)} cb 
+ * @typedef ElasticSearchInfo
+ * @property {String} host
+ * @property {String} port
+ * @property {String} groupsIndex
  */
-function getGroups(cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-        const groups = JSON.parse(buffer)
-        cb(null, groups)
-    })
-}
 
-/**
- * Gets the group with the given name
- * @param {String} name 
- * @param {function(Error, Group)} cb 
- */
-function getGroup(name, cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-        const groupArr = JSON.parse(buffer).filter(group => group.name.toLowerCase() == name.toLowerCase())
-        if(groupArr.length == 0) return cb(null, null)
-        cb(null, groupArr[0])
-    })
-}
+class Groups {
+    /**
+     * @param {ElasticSearchInfo} es Info about the ElasticSearch server
+     */
+    constructor(es) {
+        this.urlGroup = `http://${es.host}:${es.port}/${es.groupsIndex}/_doc/`
+        this.urlGroupsList = `http://${es.host}:${es.port}/${es.groupsIndex}/_search/`
+    }
 
-/**
- * Adds or replaces a Group object with given name and description
- * @param {String} name
- * @param {String} description 
- * @param {function(Error, Group)} cb
- */
-function addGroup(name, description, cb) {
-    if (!name) return cb(null, null)
-    
-    fs.readFile(groupsPath, (err, buffer) => {
-        if (err) return cb(err)
+    /**
+     * @param {ElasticSearchInfo} es Info about the ElasticSearch server
+     */
+    static init(es) {
+        return new Groups(es)
+    }
 
-        // Filters out group with the same name, for replacement
-        const groups = JSON.parse(buffer).filter(group => group.name.toLowerCase() != name.toLowerCase())
-        
-        // Add new Group
-        const newGroup = {'name': name, 'description': description || '', 'games': []}
-        groups.push(newGroup)
-
-        fs.writeFile(groupsPath, JSON.stringify(groups, null, '\t'), (err) => {
-            if (err) return cb(err)
-            cb(null, newGroup)
-        })
-    })
-}
-
-/**
- * Edits a group by changing its name and description to the given parameters
- * @param {String} previousName 
- * @param {String} newName 
- * @param {String} newDescription
- * @param {function(Error, Group)} cb 
- */
-function editGroup(previousName, newName, newDescription, cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-        
-        const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == previousName.toLowerCase())
-        if(desiredGroup.length == 0) return cb(null, null)
-
-        if (newName) {
-            // In case the newName is already in the database, return a Group object with a null name
-            if(groupArr.filter(group => group.name.toLowerCase() == newName.toLowerCase()).length != 0) {
-                return cb(null, {'name' : null})
+    /**
+     * Gets all groups in the database
+     * @returns {Promise<Array<Group>} Promise of an array containing every group
+     */
+    getGroups() {
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         }
-        
-        const group = desiredGroup[0]
-        group.name = newName || previousName
-        group.description = newDescription || group.description
 
-        fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) return cb(err)
-            cb(null, group)
-        })
-    })
-}
+        return fetch(this.urlGroupsList, options)
+            .then(res => res.json())
+            .then(json => json.hits.hits)
+            .then(groups => {
+                const groupArr = []
+                groups.forEach(group => {
+                    const parsedGroup = {
+                        'id': group._id,
+                        'name': group._source.name,
+                        'description': group._source.description,
+                        'games': group._source.games
+                    }
+                    groupArr.push(parsedGroup)
+                })
+                return groupArr
+            })
+    }
 
-/**
- * Gets the games for a given group
- * @param {String} groupName
- * @param {function(Error, Array<Game>)} cb 
- */
-function getGames(groupName, cb) {
-    getGroup(groupName, (err, group) => {
-        if(err) return cb(err)
-        if(!group) return cb(null, null)
-        
-        cb(null, group.games)
-    })
-}
-
-/**
- * Adds a new game to the array of games of the Group with given name
- * If the gameId already exists in the given group, it is replaced instead
- * @param {String} groupName 
- * @param {Integer} gameId 
- * @param {String} gameName
- * @param {function(Error, Group)} cb
- */
-function addGame(groupName, gameId, gameName, cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-
-        const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == groupName.toLowerCase())
-        if(desiredGroup.length == 0) return cb(null, null)
-        
-        const group = desiredGroup[0]
-        group.games = group.games.filter(game => game.id != gameId)
-
-        const game = {
-            id: gameId,
-            name: gameName
+    /**
+     * Gets the group with the given id
+     * @param {String} id 
+     * @returns {Promise<Group>} Promise of a Group
+     */
+    getGroup(id) {
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
         }
-        group.games.push(game)
 
-        fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) return cb(err)
-            cb(null, group)
-        })
-    })
+        return fetch(`${this.urlGroup}${id}`, options)
+            .then(res => res.json())
+            .then(group => {
+                if (!group.found) return null
+                const parsedGroup = {
+                    'id': group._id,
+                    'name': group._source.name,
+                    'description': group._source.description,
+                    'games': group._source.games
+                }
+                return parsedGroup
+            })
+    }
+
+    /**
+     * Adds a Group object with given name and description
+     * @param {String} name
+     * @param {String} description 
+     * @returns {Promise<Group>}
+     */
+    addGroup(name, description) {
+        if (!name) return Promise.resolve().then(() => null)
+        const newGroup = {'name': name, 'description': description || '', 'games': []}
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(newGroup)
+        }
+
+        return fetch(this.urlGroup, options)
+            .then(res => res.json())
+            .then(group => {
+                newGroup.id = group._id
+                return newGroup
+            })
+    }
+
+    /**
+     * Edits a group by changing its name and description to the given parameters
+     * @param {String} id
+     * @param {String} newName 
+     * @param {String} newDescription
+     * @returns {Promise<Group>}
+     */
+    editGroup(id, newName, newDescription) {
+        return this.getGroup(id)
+            .then(group => {
+                if (!group) return null
+                group.name = newName || group.name
+                group.description = newDescription || group.description
+
+                const options = {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(group)
+                }
+
+                return fetch(`${this.urlGroup}${id}`, options)
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.result == 'updated') return group
+                        return null
+                    })
+            })
+    }
+
+    removeGroup(id) {
+        const options = {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        }
+
+        return this.getGroup(id)
+            .then(group =>
+                fetch(`${this.urlGroup}${id}`, options)
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.result == 'deleted') return group
+                        return null
+                    }))
+    }
+
+    /**
+     * Gets the games for a given group
+     * @param {String} groupId
+     * @returns {Promise<Game>} cb 
+     */
+    getGames(groupId) {
+        this.getGroup(groupId)
+            .then(group => {
+                if (!group) return null
+                return group.games
+            })
+    }
+
+    /**
+     * Adds a new game to the array of games of the Group with given name
+     * If the gameId already exists in the given group, it is replaced instead
+     * @param {String} groupId 
+     * @param {Integer} gameId 
+     * @param {String} gameName
+     * @returns {Promise<Group>}
+     */
+    addGame(groupId, gameId, gameName) {
+        this.getGroup(groupId)
+            .then(group => {
+                if (!group) return null
+                group.games = group.games.filter(game => game.id != gameId)
+
+                const game = {
+                    id: gameId,
+                    name: gameName
+                }
+                group.games.push(game)
+
+                const options = {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(group)
+                }
+
+                return fetch(`${this.urlGroup}${group.id}`, options)
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.result == 'updated') return group
+                        return null
+                    })
+            })
+    }
+
+    deleteGame(groupId, gameId) {
+        this.getGroup(groupId)
+            .then(group => {
+                if (!group) return null
+                //TODO: Find a way to convert multiple param callback to promise!
+            })
+    }
 }
 
 /**
@@ -180,20 +267,4 @@ function deleteGame(groupName, gameId, cb) {
     })
 }
 
-function init(path) {
-    if(path) groupsPath = path
-    return API
-}
-
-const API = {
-    init,
-    getGroup,
-    getGroups,
-    addGroup,
-    editGroup,
-    getGames,
-    addGame,
-    deleteGame
-}
-
-module.exports = API
+module.exports = Groups
