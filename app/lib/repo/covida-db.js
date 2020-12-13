@@ -43,17 +43,11 @@ class Groups {
      * @returns {Promise<Array<Group>} Promise of an array containing every group
      */
     getGroups() {
-        const options = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        }
-
-        return fetch(this.urlGroupsList, options)
+        return fetch(this.urlGroupsList)
             .then(res => res.json())
-            .then(json => json.hits.hits)
+            .then(json => {
+                return json.hits.hits
+            })
             .then(groups => {
                 const groupArr = []
                 groups.forEach(group => {
@@ -75,15 +69,7 @@ class Groups {
      * @returns {Promise<Group>} Promise of a Group
      */
     getGroup(id) {
-        const options = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        }
-
-        return fetch(`${this.urlGroup}${id}`, options)
+        return fetch(`${this.urlGroup}${id}`)
             .then(res => res.json())
             .then(group => {
                 if (!group.found) return null
@@ -137,6 +123,7 @@ class Groups {
                 if (!group) return null
                 group.name = newName || group.name
                 group.description = newDescription || group.description
+                delete group.id // Remove id from _source
 
                 const options = {
                     method: 'PUT',
@@ -150,7 +137,10 @@ class Groups {
                 return fetch(`${this.urlGroup}${id}`, options)
                     .then(res => res.json())
                     .then(json => {
-                        if (json.result == 'updated') return group
+                        if (json.result == 'updated') {
+                            group.id = id
+                            return group
+                        } 
                         return null
                     })
             })
@@ -181,7 +171,7 @@ class Groups {
      * @returns {Promise<Game>} cb 
      */
     getGames(groupId) {
-        this.getGroup(groupId)
+        return this.getGroup(groupId)
             .then(group => {
                 if (!group) return null
                 return group.games
@@ -197,7 +187,7 @@ class Groups {
      * @returns {Promise<Group>}
      */
     addGame(groupId, gameId, gameName) {
-        this.getGroup(groupId)
+        return this.getGroup(groupId)
             .then(group => {
                 if (!group) return null
                 group.games = group.games.filter(game => game.id != gameId)
@@ -207,6 +197,7 @@ class Groups {
                     name: gameName
                 }
                 group.games.push(game)
+                delete group.id // Remove id from _source
 
                 const options = {
                     method: 'PUT',
@@ -217,17 +208,20 @@ class Groups {
                     body: JSON.stringify(group)
                 }
 
-                return fetch(`${this.urlGroup}${group.id}`, options)
+                return fetch(`${this.urlGroup}${groupId}`, options)
                     .then(res => res.json())
                     .then(json => {
-                        if (json.result == 'updated') return group
+                        if (json.result == 'updated') {
+                            group.id = groupId
+                            return group
+                        } 
                         return null
                     })
             })
     }
 
     deleteGame(groupId, gameId) {
-        this.getGroup(groupId)
+        return this.getGroup(groupId)
             .then(group => {
                 if (!group) return null
                 //TODO: Find a way to convert multiple param callback to promise!

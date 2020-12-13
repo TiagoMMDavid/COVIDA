@@ -1,13 +1,18 @@
 /* eslint-disable no-undef */
 'use strict'
 
-const GROUPS_PATH = './__tests__/mocks/groups-db.json'
+const es = {
+    host: 'localhost',
+    port: '9200',
+    groupsIndex: 'groups-db'
+}
 
-const groups = require('./../lib/repo/covida-db').init(GROUPS_PATH)
-const fs = require('fs')
+const fetch = require('node-fetch')
+const groups = require('./../lib/repo/covida-db').init(es)
 
 const EXPECTED_GROUPS = [
     {
+        id: '1',
         name: 'Favorite',
         description: 'Group for our favorite games',
         games: [ 
@@ -17,6 +22,7 @@ const EXPECTED_GROUPS = [
         ]
     },
     {
+        id: '2',
         name: 'eSports',
         description: 'Professional competitive games',
         games: [
@@ -28,188 +34,272 @@ const EXPECTED_GROUPS = [
         ]
     },
     {
+        id: '3',
         name: 'ToBeEdited',
         description: 'Group to be edited in tests',
         games: []
     },
     {
+        id: '4',
         name: 'ToBeRemoved',
         description: 'Group to remove game in tests',
         games: [ { id: 1, name: 'Remove me' } ]
     },
     {
+        id: '5',
         name: 'ToBeAdded',
         description: 'Group to add game in tests',
         games: []
     },
     {
+        id: '6',
         name: 'ToBeReplaced',
         description: 'Group to replace in tests',
+        games: []
+    },
+    {
+        id: '7',
+        name: 'ToBeRemovedGroup',
+        description: 'Group to be removed in tests',
         games: []
     }
 ]
 
-beforeAll(() => {
-    fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
+function getBulkBodyString() {
+    let bodyString = ''
+    EXPECTED_GROUPS.forEach((group) => {
+        bodyString += `{ "index" : { "_id" : "${group.id}" } }\n`
+        const noIdGroup = {
+            name: group.name,
+            description: group.description,
+            games: group.games
+        }
+        bodyString += `${JSON.stringify(noIdGroup)}\n`
+    })
+
+    return bodyString   
+}
+
+beforeAll(done => {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: getBulkBodyString()
+    }
+
+    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/_doc/_bulk/`, options).then(() => done())
 })
+
 
 test('Test groups module getGroup successfully', done => {
-    groups.getGroup('Favorite', (err, group) => {
-        expect(err).toBeFalsy()
+    groups.getGroup('1')
+        .then(group => {
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('1')
+            expect(group.name).toBe('Favorite')
+            expect(group.description).toBe('Group for our favorite games')
 
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('Favorite')
-        expect(group.description).toBe('Group for our favorite games')
-        group.games.forEach((game, i) => {
-            expect(game.id).toBe(EXPECTED_GROUPS[0].games[i].id)
-            expect(game.name).toBe(EXPECTED_GROUPS[0].games[i].name)
+            group.games.forEach((game, i) => {
+                expect(game.id).toBe(EXPECTED_GROUPS[0].games[i].id)
+                expect(game.name).toBe(EXPECTED_GROUPS[0].games[i].name)
+            })
+
+            done()
         })
-        done()
-    })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module getGroup for absent group name', done => {
-    groups.getGroup('Absent', (err, group) => {
-        expect(err).toBeFalsy()
-        expect(group).toBeFalsy()
-        done()
-    })
+test('Test groups module getGroup for absent group id', done => {
+    groups.getGroup('0')
+        .then(group => {
+            expect(group).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module getGroups successfully', done => {
-    groups.getGroups((err, groups) => {
-        expect(err).toBeFalsy()
+    groups.getGroups()
+        .then(groups => {
+            expect(groups).toBeTruthy()
 
-        expect(groups).toBeTruthy()
-        groups.slice(0, 2).forEach((group, i) => {
-            expect(group.name).toBe(EXPECTED_GROUPS[i].name)
-            expect(group.description).toBe(EXPECTED_GROUPS[i].description)
-            group.games.forEach((game, j) => {
-                expect(game.id).toBe(EXPECTED_GROUPS[i].games[j].id)
-                expect(game.name).toBe(EXPECTED_GROUPS[i].games[j].name)
+            expect(groups.length).toBeGreaterThan(0)
+            groups.slice(0, 2).forEach((group, i) => {
+                expect(group.id).toBe(EXPECTED_GROUPS[i].id)
+                expect(group.name).toBe(EXPECTED_GROUPS[i].name)
+                expect(group.description).toBe(EXPECTED_GROUPS[i].description)
+
+                group.games.forEach((game, j) => {
+                    expect(game.id).toBe(EXPECTED_GROUPS[i].games[j].id)
+                    expect(game.name).toBe(EXPECTED_GROUPS[i].games[j].name)
+                })
             })
-        })
 
-        done()
-    })
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module addGroup successfully', done => {
-    groups.addGroup('TestGroup', 'Test Description', (err, group) => {
-        expect(err).toBeFalsy()
-
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('TestGroup')
-        expect(group.description).toBe('Test Description')
-        expect(group.games.length).toBe(0)
-        done()
-    })
+    groups.addGroup('TestGroup', 'Test Description')
+        .then(group => {
+            expect(group).toBeTruthy()
+            expect(group.name).toBe('TestGroup')
+            expect(group.description).toBe('Test Description')
+            expect(group.games.length).toBe(0)
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module addGroup with an existing group', done => {
-    groups.addGroup('ToBeReplaced', 'New description', (err, group) => {
-        expect(err).toBeFalsy()
-        expect(group.name).toBe('ToBeReplaced')
-        expect(group.description).toBe('New description')
-        expect(group.games.length).toBe(0)
-        done()
-    })
+test('Test groups module addGroup with an already existing group name', done => {
+    groups.addGroup('ToBeReplaced', 'New description')
+        .then(group => {
+            expect(group.id).not.toBe('6')
+            expect(group.name).toBe('ToBeReplaced')
+            expect(group.description).toBe('New description')
+            expect(group.games.length).toBe(0)
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module addGroup with null name', done => {
-    groups.addGroup(null, 'N/A', (err, group) => {
-        expect(err).toBeFalsy()
-        expect(group).toBeFalsy()
-        done()
-    })
+test('Test groups module addGroup with null id', done => {
+    groups.addGroup(null, 'N/A')
+        .then(group => {
+            expect(group).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module editGroup successfully', done => {
-    groups.editGroup('ToBeEdited', 'newName', 'newDesc', (err, group) => {
-        expect(err).toBeFalsy()
-
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('newName')
-        expect(group.description).toBe('newDesc')
-        expect(group.games.length).toBe(0)
-        done()
-    })
+    groups.editGroup('3', 'newName', 'newDesc')
+        .then(group => {
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('3')
+            expect(group.name).toBe('newName')
+            expect(group.description).toBe('newDesc')
+            expect(group.games.length).toBe(0)
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module editGroup for absent group name', done => {
-    groups.editGroup('Absent', 'N/A', 'N/A', (err, group) => {
-        expect(err).toBeFalsy()
-        expect(group).toBeFalsy()
-        done()
-    })
-})
-
-test('Test groups module editGroup for duplicate group name', done => {
-    groups.editGroup('Favorite', 'eSports', 'N/A', (err, group) => {
-        expect(err).toBeFalsy()
-        expect(group).toBeTruthy()
-        expect(group.name).toBeFalsy()
-        done()
-    })
+test('Test groups module editGroup for absent group id', done => {
+    groups.editGroup('0', 'N/A', 'N/A')
+        .then(group => {
+            expect(group).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module getGames successfully', done => {
-    groups.getGames('Favorite', (err, games) => {
-        expect(err).toBeFalsy()
-
-        expect(games).toBeTruthy()
-        games.forEach((game, i) => {
-            expect(game.id).toBe(EXPECTED_GROUPS[0].games[i].id)
-            expect(game.name).toBe(EXPECTED_GROUPS[0].games[i].name)
+    groups.getGames('1')
+        .then(games => {
+            expect(games).toBeTruthy()
+            games.forEach((game, i) => {
+                expect(game.id).toBe(EXPECTED_GROUPS[0].games[i].id)
+                expect(game.name).toBe(EXPECTED_GROUPS[0].games[i].name)
+            })
+            done()
         })
-        done()
-    })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module getGames for absent group name', done => {
-    groups.getGames('Absent', (err, games) => {
-        expect(err).toBeFalsy()
-        expect(games).toBeFalsy()
-        done()
-    })
+test('Test groups module getGames for absent group id', done => {
+    groups.getGames('0')
+        .then(games => {
+            expect(games).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module addGame successfully', done => {
-    groups.addGame('ToBeAdded', 2, 'newGame', (err, group) => {
-        expect(err).toBeFalsy()
+    groups.addGame('5', 2, 'newGame')
+        .then(group => {
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('5')
+            expect(group.name).toBe('ToBeAdded')
+            expect(group.description).toBe('Group to add game in tests')
 
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('ToBeAdded')
-        expect(group.description).toBe('Group to add game in tests')
-
-        expect(group.games[0].id).toBe(2)
-        expect(group.games[0].name).toBe('newGame')
-        done()
-    })
+            expect(group.games[0].id).toBe(2)
+            expect(group.games[0].name).toBe('newGame')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module addGame for absent group name', done => {
-    groups.addGame('Absent', 2, 'game', (err, group) => {
-        expect(err).toBeFalsy()
-
-        expect(group).toBeFalsy()
-        done()
-    })
+test('Test groups module addGame for absent group id', done => {
+    groups.addGame('0', 2, 'game')
+        .then(group => {  
+            expect(group).toBeFalsy()
+            done()
+        }) 
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module addGame for duplicate game', done => {
-    groups.addGame('Favorite', 17269, 'Roblox', (err, group) => {
-        expect(err).toBeFalsy()
-
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('Favorite')
-        const filteredGames = group.games.filter(game => game.id == 17269)
-        expect(filteredGames.length).toBe(1)
-        expect(filteredGames[0].id).toBe(17269)
-        expect(filteredGames[0].name).toBe('Roblox')
-        done()
-    })
+    groups.addGame('1', 17269, 'Roblox')
+        .then(group => {
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('1')
+            expect(group.name).toBe('Favorite')
+            const filteredGames = group.games.filter(game => game.id == 17269)
+            expect(filteredGames.length).toBe(1)
+            expect(filteredGames[0].id).toBe(17269)
+            expect(filteredGames[0].name).toBe('Roblox')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
+
+/*
+TODO: finish delete game implementation
 
 test('Test groups module deleteGame successfully', done => {
     groups.deleteGame('ToBeRemoved', 1, (err, group, game) => {
@@ -246,7 +336,18 @@ test('Test groups module deleteGame for absent game', done => {
         done()
     })
 })
+*/
 
-afterAll(() => {
-    fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
+
+afterAll((done) => {
+    
+    const options = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    }
+
+    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/`, options).then(() => done())
 })
