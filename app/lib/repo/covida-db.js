@@ -2,17 +2,23 @@
 const fetch = require('node-fetch')
 
 /**
+ * @typedef Group
+ * @property {String} id
+ * @property {String} name
+ * @property {String} description
+ * @property {Array<Game>} games
+ */
+
+/**
  * @typedef Game
  * @property {Integer} id
  * @property {String} name
  */
 
 /**
- * @typedef Group
- * @property {String} id
- * @property {String} name
- * @property {String} description
- * @property {Array<Game>} games
+ * @typedef GroupGame
+ * @property {Group} group
+ * @property {Game} game
  */
 
 /**
@@ -43,13 +49,18 @@ class Groups {
      * @returns {Promise<Array<Group>} Promise of an array containing every group
      */
     getGroups() {
+        console.log(this.urlGroup)
+        
         return fetch(this.urlGroupsList)
             .then(res => res.json())
             .then(json => {
+                if (json.status == 404) return null
                 return json.hits.hits
             })
             .then(groups => {
                 const groupArr = []
+                if (groups == null) return groupArr
+
                 groups.forEach(group => {
                     const parsedGroup = {
                         'id': group._id,
@@ -146,7 +157,12 @@ class Groups {
             })
     }
 
-    removeGroup(id) {
+    /**
+     * Removes the group with given id
+     * @param {String} id
+     * @returns {Promise<Group>} 
+     */
+    deleteGroup(id) {
         const options = {
             method: 'DELETE',
             headers: {
@@ -168,7 +184,7 @@ class Groups {
     /**
      * Gets the games for a given group
      * @param {String} groupId
-     * @returns {Promise<Game>} cb 
+     * @returns {Promise<Game>}
      */
     getGames(groupId) {
         return this.getGroup(groupId)
@@ -220,45 +236,60 @@ class Groups {
             })
     }
 
+    /**
+     * Delete a game from the array of games of the Group with given name
+     * @param {String} groupId 
+     * @param {Integer} gameId 
+     * @returns {Promise<GroupGame>}
+     */
     deleteGame(groupId, gameId) {
         return this.getGroup(groupId)
             .then(group => {
-                if (!group) return null
-                //TODO: Find a way to convert multiple param callback to promise!
+                const groupGame = { 
+                    'group': null,
+                    'game': null
+                }
+
+                // Return if group does not exist
+                if (!group) return groupGame
+                groupGame.group = group
+
+                let removedGame = null
+                group.games = group.games.filter(currGame => {
+                    if(currGame.id == gameId) {
+                        removedGame = currGame
+                        return false
+                    }
+                    return true
+                })
+
+                // Check if group contained game
+                if (!removedGame) return groupGame
+
+                // Delete game
+                delete group.id // Remove id from _source
+                const options = {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(group)
+                }
+
+                return fetch(`${this.urlGroup}${groupId}`, options)
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.result == 'updated') {
+                            group.id = groupId
+                            groupGame.game = removedGame
+                            return groupGame
+                        } 
+                        return null
+                    })
+
             })
     }
-}
-
-/**
- * Delete a game from the array of games of the Group with given name
- * @param {String} groupName 
- * @param {Integer} gameId 
- * @param {function(Error, Group, Game)} cb
- */
-function deleteGame(groupName, gameId, cb) {
-    fs.readFile(groupsPath, (err, buffer) => {
-        if(err) return cb(err)
-
-        const groupArr = JSON.parse(buffer)
-        const desiredGroup = groupArr.filter(group => group.name.toLowerCase() == groupName.toLowerCase())
-        if(desiredGroup.length == 0) return cb(null, null, null)
-        
-        const group = desiredGroup[0]
-        let removedGame = null
-        group.games = group.games.filter(currGame => {
-            if(currGame.id == gameId) {
-                removedGame = currGame
-                return false
-            }
-            return true
-        })
-
-        if (!removedGame) return cb(null, group, null)
-        fs.writeFile(groupsPath, JSON.stringify(groupArr, null, '\t'), (err) => {
-            if (err) return cb(err)
-            cb(null, group, removedGame)
-        })
-    })
 }
 
 module.exports = Groups

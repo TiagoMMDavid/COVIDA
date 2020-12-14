@@ -287,6 +287,19 @@ it('should respond with 404 due to non existing game in DELETE game', () => fris
     .expect('status', 404)
 )
 
+/**
+ * DELETE ${HOST}/covida/groups/<group>
+ */
+it('should delete group', () => frisby 
+    .del(`${HOST}/covida/groups/ToBeRemoved`)
+    .expect('status', 200)
+)
+
+it('should respond with 404 due to non existing group in DELETE group', () => frisby 
+    .del(`${HOST}/covida/groups/None`)
+    .expect('status', 404)
+)
+
 afterAll(() => {
     fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
     app.kill()

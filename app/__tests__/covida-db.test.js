@@ -80,7 +80,7 @@ function getBulkBodyString() {
     return bodyString   
 }
 
-beforeAll(done => {
+beforeAll((done) => {
     const options = {
         method: 'POST',
         headers: {
@@ -90,7 +90,13 @@ beforeAll(done => {
         body: getBulkBodyString()
     }
 
-    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/_doc/_bulk/`, options).then(() => done())
+    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/_doc/_bulk/`, options).then(() => {
+        console.log('inside beforeAll: Post request to bulk returned')
+        setTimeout(() => {
+            console.log('inside beforeAll: Waited for 1 second')
+            done()
+        }, 1000)
+    })
 })
 
 
@@ -127,6 +133,7 @@ test('Test groups module getGroup for absent group id', done => {
         })
 })
 
+
 test('Test groups module getGroups successfully', done => {
     groups.getGroups()
         .then(groups => {
@@ -151,6 +158,7 @@ test('Test groups module getGroups successfully', done => {
             done()
         })
 })
+
 
 test('Test groups module addGroup successfully', done => {
     groups.addGroup('TestGroup', 'Test Description')
@@ -212,6 +220,36 @@ test('Test groups module editGroup successfully', done => {
 
 test('Test groups module editGroup for absent group id', done => {
     groups.editGroup('0', 'N/A', 'N/A')
+        .then(group => {
+            expect(group).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
+})
+
+test('Test groups module deleteGroup successfully', done => {
+    groups.deleteGroup('7')
+        .then(group => {
+            expect(group).toBeTruthy()
+
+            expect(group.id).toBe('7')
+            expect(group.name).toBe('ToBeRemovedGroup')
+            expect(group.description).toBe('Group to be removed in tests')
+            expect(group.games.length).toBe(0)
+
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
+})
+
+test('Test groups module deleteGroup for absent group id', done => {
+    groups.deleteGroup('0')
         .then(group => {
             expect(group).toBeFalsy()
             done()
@@ -298,49 +336,63 @@ test('Test groups module addGame for duplicate game', done => {
         })
 })
 
-/*
-TODO: finish delete game implementation
-
 test('Test groups module deleteGame successfully', done => {
-    groups.deleteGame('ToBeRemoved', 1, (err, group, game) => {
-        expect(err).toBeFalsy()
+    groups.deleteGame('4', 1)
+        .then(groupGame => {
+            expect(groupGame).toBeTruthy()
+            const group = groupGame.group
+            const game = groupGame.game
 
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('ToBeRemoved')
-        expect(group.description).toBe('Group to remove game in tests')
-        expect(group.games.length).toBe(0)
-        
-        expect(game.id).toBe(1)
-        expect(game.name).toBe('Remove me')
-        done()
-    })
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('4')
+            expect(group.name).toBe('ToBeRemoved')
+            expect(group.description).toBe('Group to remove game in tests')
+            expect(group.games.length).toBe(0)
+            
+            expect(game).toBeTruthy()
+            expect(game.id).toBe(1)
+            expect(game.name).toBe('Remove me')
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
-test('Test groups module deleteGame for absent group name', done => {
-    groups.deleteGame('Absent', 9999, (err, group, game) => {
-        expect(err).toBeFalsy()
-
-        expect(group).toBeFalsy()
-        expect(game).toBeFalsy()
-        done()
-    })
+test('Test groups module deleteGame for absent group id', done => {
+    groups.deleteGame('0', 9999)
+        .then(groupGame => {
+            expect(groupGame.group).toBeFalsy()
+            expect(groupGame.game).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
 
 test('Test groups module deleteGame for absent game', done => {
-    groups.deleteGame('Favorite', 9999, (err, group, game) => {
-        expect(err).toBeFalsy()
+    groups.deleteGame('1', 9999)
+        .then(groupGame => {
+            expect(groupGame).toBeTruthy()
+            const group = groupGame.group
+            const game = groupGame.game
 
-        expect(group).toBeTruthy()
-        expect(group.name).toBe('Favorite')
-        expect(game).toBeFalsy()
-        done()
-    })
+            expect(group).toBeTruthy()
+            expect(group.id).toBe('1')
+            expect(group.name).toBe('Favorite')
+            expect(game).toBeFalsy()
+            done()
+        })
+        .catch(err => {
+            expect(err).toBeFalsy()
+            done()
+        })
 })
-*/
-
 
 afterAll((done) => {
-    
     const options = {
         method: 'DELETE',
         headers: {
@@ -349,5 +401,8 @@ afterAll((done) => {
         }
     }
 
-    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/`, options).then(() => done())
+    setTimeout(() => {
+        fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/`, options).then(() => done())
+        //done()
+    }, 100)
 })

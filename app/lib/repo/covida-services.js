@@ -3,7 +3,7 @@
 const es = {
     host: 'localhost',
     port: '9200',
-    groupsIndex: 'groups'
+    groupsIndex: 'covida-groups'
 }
 
 const db = require('./covida-db').init(es)
@@ -14,9 +14,15 @@ const MIN_RATING = 0
 const MAX_RATING = 100
 
 /**
+ * @typedef GroupGames
+ * @property {Group} group
+ * @property {Array<GameDetail>} games
+ */
+
+/**
  * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @returns A promise containing an array of GameDetail or Error if not succeeded
+ * @returns {Promise} A promise containing an array of GameDetail or Error if not succeeded
  */
 function getTopGames(limit) {
     return igdb.getTopGames(limit || DEFAULT_LIMIT)
@@ -47,115 +53,131 @@ function getGameById(gameId) {
 }
 
 /**
- * Gets all groups in the database
- * @param {function(Error, Array<Group>)} cb 
+ * Gets all groups
+ * @returns {Promise<Array<Group>} Promise of an array containing every group
  */
-function getGroups(cb) {
-    db.getGroups((err, groups) => {
-        if (err) return cb(err)
-        groups = groups.map(group => {
+function getGroups() {
+    return db.getGroups()
+        .then(groups => groups.map(group => {
             return {
+                id: group.id,
                 name: group.name,
                 description: group.description
             }
-        })
-        cb(null, groups)
-    })
+        }))
 }
 
 /**
- * Gets the group with the given name
- * @param {String} name 
- * @param {function(Error, Group)} cb 
+ * Gets the group with the given id
+ * @param {String} id 
+ * @returns {Promise<Group>} Promise of a Group
  */
-function getGroup(name, cb) {
-    db.getGroup(name, cb)
+function getGroup(id) {
+    return db.getGroup(id)
 }
 
 /**
- * Adds or replaces a Group object with given name and description
+ * Adds a Group object with given name and description
  * @param {String} name
  * @param {String} description 
- * @param {function(Error, Group)} cb
+ * @returns {Promise<Group>}
  */
-function addGroup(name, description, cb) {
-    db.addGroup(name, description, cb)
+function addGroup(name, description) {
+    return db.addGroup(name, description)
 }
 
 /**
  * Edits a group by changing its name and description to the given parameters
- * @param {String} previousName 
+ * @param {String} id
  * @param {String} newName 
  * @param {String} newDescription
- * @param {function(Error, Group)} cb 
+ * @returns {Promise<Group>}
  */
-function editGroup(previousName, newName, newDescription, cb) {
-    db.editGroup(previousName, newName, newDescription, cb)
+function editGroup(id, newName, newDescription) {
+    return db.editGroup(id, newName, newDescription)
 }
 
 /**
- * Adds a new game to the array of games of the Group with given name
+ * Deletes the group with given id
+ * @param {String} id
+ * @returns {Promise<Group>} 
+ */
+function deleteGroup(id) {
+    return db.deleteGroup(id)
+}
+
+/**
+ * Adds a new game to the array of games of the Group with given id
  * If the game already exists in the given group, it is replaced instead
- * If the game doesn't exist the callback function receives every parameter as null
- * @param {String} groupName 
+ * @param {String} groupId 
  * @param {String} gameName
- * @param {function(Error, Group, Game)} cb
+ * @returns {Promise<GroupGame>}
  */
-function addGameToGroup(groupName, gameName, cb) {
-    igdb.searchGames(gameName, 1, (err, games) => {
-        if (err) return cb(err)
-        if (games.length == 0) {
-            return cb(null, null, null)
-        }
+function addGameToGroup(groupId, gameName) {
+    const groupGame = { 
+        'group': null,
+        'game': null
+    }
 
-        const game = games[0]
-        db.addGame(groupName, game.id, game.name, (err, group) => {
-            if (err) return cb(err)
-            cb(null, group, game)
+    return igdb.searchGames(gameName, 1)
+        .then(games => {
+            if (games.length == 0) return groupGame
+            const game = games[0]
+
+            groupGame.game = game
+            return db.addGame(groupId, game.id, game.name)
         })
-    })
+        .then(group => {
+            if (groupGame.game)
+                groupGame.group = group
+
+            return groupGame
+        })
 }
 
 /**
- * Delete a game from the array of games of the Group with given name
- * @param {String} groupName 
+ * Delete a game from the array of games of the Group with given id
+ * @param {String} groupId 
  * @param {Integer} gameId 
- * @param {function(Error, Group, Game)} cb
+ * @returns {Promise<GroupGame>}
  */
-function deleteGameFromGroup(groupName, gameId, cb) {
-    db.deleteGame(groupName, gameId, cb)
+function deleteGameFromGroup(groupId, gameId) {
+    return db.deleteGame(groupId, gameId)
 }
 
 /**
  * Lists the games from a given group ordered by total_rating
- * @param {String} groupName 
+ * @param {String} groupId 
  * @param {Number} minRating
  * @param {Number} maxRating  
- * @param {function(Error, Group, Array<GameDetail>)} cb 
+ * @returns {Promise<GroupGames>)} 
  */
-function listGroupGames(groupName, minRating, maxRating, cb) {
+function listGroupGames(groupId, minRating, maxRating) {
     minRating = minRating || MIN_RATING
     maxRating = maxRating || MAX_RATING
 
-    db.getGroup(groupName, (err, group) => {
-        if (err) return cb(err)
+    const groupGames = { 
+        'group': null,
+        'games': null
+    }
 
-        if (!group) {
-            return cb(null, null, null)
-        }
-        
-        if (maxRating < minRating) {
-            return cb(null, group, null)
-        }
+    return db.getGroup(groupId)
+        .then(group => {
+            if (!group) return groupGames
 
-        let ids = []
-        group.games.forEach(game => ids.push(game.id))
+            groupGames.group = group
+            if (maxRating < minRating) return groupGames
 
-        igdb.getGamesByIds(ids, (err, games) => {
-            if (err) return cb(err)
-            cb(null, group, games.filter(game => game.total_rating >= minRating && game.total_rating <= maxRating))
+            let ids = []
+            group.games.forEach(game => ids.push(game.id))
+            return igdb.getGamesByIds(ids)
         })
-    })
+        .then(games => {
+            if (groupGames.group)
+                groupGames.games = games.filter(game => game.total_rating >= minRating && game.total_rating <= maxRating)
+
+            return groupGames
+        })
 }
 
 
@@ -167,6 +189,7 @@ module.exports = {
     getGroup,
     addGroup,
     editGroup,
+    deleteGroup,
     addGameToGroup,
     deleteGameFromGroup,
     listGroupGames

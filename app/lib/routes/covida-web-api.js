@@ -66,55 +66,62 @@ router.get('/covida/games/:game', (req, resp, next) => {
 })
 
 router.get('/covida/groups/:group/games', (req, resp, next) => {
-    service.listGroupGames(req.params.group, req.query.min, req.query.max, (err, group, games) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!group) {
-            const err = {
-                status: 404,
-                message: 'Group does not exist'
+    service.listGroupGames(req.params.group, req.query.min, req.query.max)
+        .then(groupGames => {
+            const group = groupGames.group
+            const games = groupGames.games
+
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        if (!games) {
-            const err = {
-                status: 400,
-                message: 'Min can\'t be greater than max'
+            if (!games) {
+                const err = {
+                    status: 400,
+                    message: 'Min can\'t be greater than max'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        resp.json(games)
-    })
+            resp.json(games)
+        })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.get('/covida/groups/:group', (req, resp, next) => {
-    service.getGroup(req.params.group, (err, group) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!group) {
-            const err = {
-                status: 404,
-                message: 'Group does not exist'
+    service.getGroup(req.params.group)
+        .then(group => {
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        const host = req.headers.host
-        group.games = group.games.map(game => {
-            game.gameDetails = `http://${host}/covida/games/${game.id}`
-            return game
+
+            const host = req.headers.host
+            group.games = group.games.map(game => {
+                game.gameDetails = `http://${host}/covida/games/${game.id}`
+                return game
+            })
+            resp.json(group)
         })
-        resp.json(group)
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.get('/covida/groups', (req, resp, next) => {
-    service.getGroups((err, groups) => {
-        if (err) return next(INTERNAL_ERROR)
-        const host = req.headers.host
-        groups = groups.map(group => {
-            group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.name}`)
-            return group
+    service.getGroups()
+        .then(groups => {
+            const host = req.headers.host
+            groups = groups.map(group => {
+                group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
+                return group
+            })
+            resp.json(groups)
         })
-        resp.json(groups)
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.get('/covida', (req, resp, next) => {
@@ -126,7 +133,7 @@ router.get('/covida', (req, resp, next) => {
 })
 
 router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
-    const groupName = req.params.group
+    const groupId = req.params.group
     const gameName = req.body.name
     if (!gameName) {
         const err = {
@@ -135,35 +142,42 @@ router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
         }
         return next(err)
     }
-    service.addGameToGroup(groupName, gameName, (err, group, game) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!game) {
-            const err = {
-                status: 404,
-                message: 'Game not found'
+    
+    service.addGameToGroup(groupId, gameName)
+        .then(groupGame => {
+            const game = groupGame.game
+            const group = groupGame.group
+
+            if (!game) {
+                const err = {
+                    status: 404,
+                    message: 'Game not found'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        if (!group) {
-            const err = {
-                status: 404,
-                message: 'Group does not exist'
+
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        const host = req.headers.host
-        resp.status(201)
-        resp.json({
-            status: 201,
-            message: `Game '${game.name}' added to group '${group.name}' successfully`,
-            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`),
-            gameDetails: `http://${host}/covida/games/${game.id}`
+
+            const host = req.headers.host
+            resp.status(201)
+            resp.json({
+                status: 201,
+                message: `Game '${game.name}' added to group '${group.name}' (id '${group.id}') successfully`,
+                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`),
+                gameDetails: `http://${host}/covida/games/${game.id}`
+            })
         })
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
-    const oldName = req.params.group
+    const groupId = req.params.group
     const newName = req.body.name
     const newDescription = req.body.description
 
@@ -175,29 +189,24 @@ router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
         return next(err)
     }
 
-    service.editGroup(oldName, newName, newDescription, (err, group) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!group) {
-            const err = {
-                status: 404,
-                message: 'Group does not exist'
+    service.editGroup(groupId, newName, newDescription)
+        .then(group => {
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        if (!group.name) {
-            const err = {
-                status: 409,
-                message: `Group '${newName}' already exists`
-            }
-            return next(err)
-        }
-        const host = req.headers.host
-        resp.json({
-            status: 200,
-            message: `Group '${oldName}' edited successfully`,
-            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`)
+
+            const host = req.headers.host
+            resp.json({
+                status: 200,
+                message: `Group '${groupId}' edited successfully`,
+                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`)
+            })
         })
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.put('/covida/groups', bodyParser, (req, resp, next) => {
@@ -210,16 +219,18 @@ router.put('/covida/groups', bodyParser, (req, resp, next) => {
         }
         return next(err)
     }
-    service.addGroup(name, description, (err, group) => {
-        if (err) return next(INTERNAL_ERROR)
-        const host = req.headers.host
-        resp.status(201)
-        resp.json({
-            status: 201,
-            message: `Group '${group.name}' added successfully`,
-            groupDetails: encodeURI(`http://${host}/covida/groups/${group.name}`)
+
+    service.addGroup(name, description)
+        .then(group => {
+            const host = req.headers.host
+            resp.status(201)
+            resp.json({
+                status: 201,
+                message: `Group '${group.name}' (id '${group.id}') added successfully`,
+                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`)
+            })
         })
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
@@ -244,4 +255,22 @@ router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
             message: `Game '${game.name}' removed from group '${group.name}' successfully`
         })
     })
+})
+
+router.delete('/covida/groups/:group', (req, resp, next) => {
+    service.deleteGroup(req.params.group)
+        .then(group => {
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
+            }
+            resp.json({
+                status: 200,
+                message: `Group '${group.name}' removed successfully`
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
 })
