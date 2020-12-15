@@ -1,12 +1,6 @@
 'use strict'
 
-const es = {
-    host: 'localhost',
-    port: '9200',
-    groupsIndex: 'covida-groups'
-}
-
-const db = require('./covida-db').init(es)
+const db = require('./covida-db')
 const igdb = require('./igdb-data')
 
 const DEFAULT_LIMIT = 10
