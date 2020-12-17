@@ -50,7 +50,7 @@ function getTopGames(limit) {
  * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @returns {Promise} A promise containing an array of GameDetail objects with given name (can be empty)
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects with given name (can be empty)
  */
 function searchGames(game, limit) {
     if (limit > IGDB_MAX_LIMIT || limit < 0) {

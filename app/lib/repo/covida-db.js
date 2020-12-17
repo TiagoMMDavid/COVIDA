@@ -7,8 +7,9 @@ const es = {
     groupsIndex: 'covida-groups'
 }
 
-const URL_GROUP = `http://${es.host}:${es.port}/${es.groupsIndex}/_doc/`
-const URL_GROUPS_LIST = `http://${es.host}:${es.port}/${es.groupsIndex}/_search/`
+// Variables only changed in init
+let URL_GROUP = `http://${es.host}:${es.port}/${es.groupsIndex}/_doc/`
+let URL_GROUPS_LIST = `http://${es.host}:${es.port}/${es.groupsIndex}/_search/?size=10000`
 
 /**
  * @typedef Group
@@ -74,6 +75,7 @@ function getGroup(id) {
                 'description': group._source.description,
                 'games': group._source.games
             }
+
             return parsedGroup
         })
 }
@@ -282,6 +284,8 @@ function deleteGame(groupId, gameId) {
 function init(index) {
     if (index) {
         es.groupsIndex = index
+        URL_GROUP = `http://${es.host}:${es.port}/${es.groupsIndex}/_doc/`
+        URL_GROUPS_LIST = `http://${es.host}:${es.port}/${es.groupsIndex}/_search/`
     }
     return API
 }
