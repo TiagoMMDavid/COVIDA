@@ -234,27 +234,31 @@ router.put('/covida/groups', bodyParser, (req, resp, next) => {
 })
 
 router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
-    service.deleteGameFromGroup(req.params.group, req.params.game, (err, group, game) => {
-        if (err) return next(INTERNAL_ERROR)
-        if (!group) {
-            const err = {
-                status: 404,
-                message: 'Group does not exist'
+    service.deleteGameFromGroup(req.params.group, req.params.game)
+        .then(groupGame => {
+            const group = groupGame.group
+            const game = groupGame.game
+
+            if (!group) {
+                const err = {
+                    status: 404,
+                    message: 'Group does not exist'
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        if (!game) {
-            const err = {
-                status: 404,
-                message: `Game does not exist in group '${group.name}'`
+            if (!game) {
+                const err = {
+                    status: 404,
+                    message: `Game does not exist in group '${group.name}' (id '${group.id}')`
+                }
+                return next(err)
             }
-            return next(err)
-        }
-        resp.json({
-            status: 200,
-            message: `Game '${game.name}' removed from group '${group.name}' successfully`
+            resp.json({
+                status: 200,
+                message: `Game '${game.name}' removed from group '${group.name}' (id '${group.id}') successfully`
+            })
         })
-    })
+        .catch(err => next(INTERNAL_ERROR))
 })
 
 router.delete('/covida/groups/:group', (req, resp, next) => {
@@ -269,7 +273,7 @@ router.delete('/covida/groups/:group', (req, resp, next) => {
             }
             resp.json({
                 status: 200,
-                message: `Group '${group.name}' removed successfully`
+                message: `Group '${group.name}' (id '${group.id}') removed successfully`
             })
         })
         .catch(err => next(INTERNAL_ERROR))

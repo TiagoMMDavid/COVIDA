@@ -1,18 +1,23 @@
 /* eslint-disable no-undef */
 'use strict'
 
-const GROUPS_PATH = './__tests__/mocks/groups-api.json'
+const es = {
+    host: 'localhost',
+    port: '9200',
+    groupsIndex: 'groups-api-tests'
+}
+
 const HOST = 'http://localhost:8000'
 
+const fetch = require('node-fetch')
 const frisby = require('frisby')
 const Joi = frisby.Joi
-const path = require('path')
-const fork = require('child_process').fork
-const app = fork('./lib/covida-server.js', [path.join(process.cwd(), GROUPS_PATH)])
-const fs = require('fs')
+
+const server = require('../lib/covida-server.js')
 
 const EXPECTED_GROUPS = [
     {
+        id: '1',
         name: 'Favorite',
         description: 'Group for our favorite games',
         games: [ 
@@ -22,6 +27,7 @@ const EXPECTED_GROUPS = [
         ]
     },
     {
+        id: '2',
         name: 'eSports',
         description: 'Professional competitive games',
         games: [
@@ -33,34 +39,66 @@ const EXPECTED_GROUPS = [
         ]
     },
     {
+        id: '3',
         name: 'ToBeEdited',
         description: 'Group to be edited in tests',
         games: []
     },
     {
+        id: '4',
         name: 'ToBeRemoved',
         description: 'Group to remove game in tests',
         games: [ { id: 1, name: 'Remove me' } ]
     },
     {
+        id: '5',
         name: 'ToBeAdded',
         description: 'Group to add game in tests',
         games: []
     },
     {
+        id: '6',
         name: 'ToBeReplaced',
         description: 'Group to replace in tests',
+        games: []
+    },
+    {
+        id: '7',
+        name: 'ToBeRemovedGroup',
+        description: 'Group to be removed in tests',
         games: []
     }
 ]
 
-beforeAll(done => {
-    app.on('message', msg => {
-        if (msg.webRunning) {
-            fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
-            done()
+function getBulkBodyString() {
+    let bodyString = ''
+    EXPECTED_GROUPS.forEach((group) => {
+        bodyString += `{ "index" : { "_id" : "${group.id}" } }\n`
+        const noIdGroup = {
+            name: group.name,
+            description: group.description,
+            games: group.games
         }
+        bodyString += `${JSON.stringify(noIdGroup)}\n`
     })
+
+    return bodyString   
+}
+
+beforeAll(done => {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: getBulkBodyString()
+    }
+
+    fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/_doc/_bulk/?refresh`, options)
+        .then(() => {
+            server.init(es.groupsIndex, done)
+        })
 })
 
 /**
@@ -108,6 +146,11 @@ it('should respond with 400 due to missing name in search', () => frisby
     .expect('status', 400)
 )
 
+it('should respond with 400 due to invalid limit in search', () => frisby
+    .get(`${HOST}/covida/games/search?limit=1000`)
+    .expect('status', 400)
+)
+
 /**
  * GET ${HOST}/covida/games/<id>
  */
@@ -134,18 +177,21 @@ it('should respond with 404 due to no game with specified id', () => frisby
 it('should get the existing groups', () => frisby
     .get(`${HOST}/covida/groups/`)
     .expect('status', 200)
+    .expect('json', '[0].id', EXPECTED_GROUPS[0].id)
     .expect('json', '[0].name', EXPECTED_GROUPS[0].name)
     .expect('json', '[0].description', EXPECTED_GROUPS[0].description)
+    .expect('json', '[1].id', EXPECTED_GROUPS[1].id)
     .expect('json', '[1].name', EXPECTED_GROUPS[1].name)
     .expect('json', '[1].description', EXPECTED_GROUPS[1].description)
 )
 
 /**
- * GET ${HOST}/covida/groups/name
+ * GET ${HOST}/covida/groups/id
  */
 it('should get existing group', () => frisby
-    .get(`${HOST}/covida/groups/Favorite`)
+    .get(`${HOST}/covida/groups/1`)
     .expect('status', 200)
+    .expect('json', 'id', EXPECTED_GROUPS[0].id)
     .expect('json', 'name', EXPECTED_GROUPS[0].name)
     .expect('json', 'description', EXPECTED_GROUPS[0].description)
     .expect('json', 'games[0].id', EXPECTED_GROUPS[0].games[0].id)
@@ -153,15 +199,15 @@ it('should get existing group', () => frisby
 )
 
 it('should respond with 404 due to getting a non existing group in /groups/<group>', () => frisby
-    .get(`${HOST}/covida/groups/None`)
+    .get(`${HOST}/covida/groups/0`)
     .expect('status', 404)
 )
 
 /**
- * GET ${HOST}/covida/groups/<name>/games
+ * GET ${HOST}/covida/groups/<id>/games
  */
 it('should get existing group games', () => frisby
-    .get(`${HOST}/covida/groups/Favorite/games`)
+    .get(`${HOST}/covida/groups/1/games`)
     .expect('status', 200)
     .expect('jsonTypes', '*', { 
         'id': Joi.number().min(1).required(),
@@ -173,12 +219,12 @@ it('should get existing group games', () => frisby
 )
 
 it('should respond with 404 due to non existing group in /<group>/games', () => frisby 
-    .get(`${HOST}/covida/groups/None/games`)
+    .get(`${HOST}/covida/groups/0/games`)
     .expect('status', 404)
 )
 
 it('should respond with 400 due to invalid min and max in /<group>/games', () => frisby 
-    .get(`${HOST}/covida/groups/Favorite/games?min=50&max=40`)
+    .get(`${HOST}/covida/groups/1/games?min=50&max=40`)
     .expect('status', 400)
 )
 
@@ -200,10 +246,10 @@ it('should respond with 400 due to no group name specified in add group', () => 
 )
 
 /**
- * PUT ${HOST}/covida/groups/<name>
+ * PUT ${HOST}/covida/groups/<id>
  */
 it('should edit group', () => frisby
-    .fetch(`${HOST}/covida/groups/ToBeEdited`, {
+    .fetch(`${HOST}/covida/groups/3`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=newName&description=newDescription'
@@ -212,12 +258,12 @@ it('should edit group', () => frisby
 )
 
 it('should respond with 400 due to no new group name and description specified in edit group', () => frisby
-    .put(`${HOST}/covida/groups/Favorite`)
+    .put(`${HOST}/covida/groups/1`)
     .expect('status', 400)
 )
 
 it('should respond with 404 due to non existing group in edit group', () => frisby
-    .fetch(`${HOST}/covida/groups/None`, {
+    .fetch(`${HOST}/covida/groups/0`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=newGroup&description=newDescription'
@@ -225,20 +271,20 @@ it('should respond with 404 due to non existing group in edit group', () => fris
     .expect('status', 404)
 )
 
-it('should respond with 409 due to editing to an already existing group name', () => frisby
-    .fetch(`${HOST}/covida/groups/Favorite`, {
+it('should change group name to an already existing group name', () => frisby
+    .fetch(`${HOST}/covida/groups/1`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=eSports&description=newDescription'
     })
-    .expect('status', 409)
+    .expect('status', 200)
 )
 
 /**
- * PUT ${HOST}/covida/groups/<name>/games
+ * PUT ${HOST}/covida/groups/<id>/games
  */
 it('should add game to group', () => frisby
-    .fetch(`${HOST}/covida/groups/ToBeAdded/games`, {
+    .fetch(`${HOST}/covida/groups/5/games`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=Fortnite'
@@ -247,12 +293,12 @@ it('should add game to group', () => frisby
 )
 
 it('should respond with 400 due to no game specified in add game to group', () => frisby
-    .put(`${HOST}/covida/groups/ToBeAdded/games`)
+    .put(`${HOST}/covida/groups/5/games`)
     .expect('status', 400)
 )
 
 it('should respond with 404 due to non existing game in add game to group', () => frisby
-    .fetch(`${HOST}/covida/groups/ToBeAdded/games`, {
+    .fetch(`${HOST}/covida/groups/5/games`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=idontexist12345'
@@ -261,7 +307,7 @@ it('should respond with 404 due to non existing game in add game to group', () =
 )
 
 it('should respond with 404 due to non existing group in add game to group', () => frisby
-    .fetch(`${HOST}/covida/groups/None/games`, {
+    .fetch(`${HOST}/covida/groups/0/games`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=Fortnite'
@@ -270,20 +316,20 @@ it('should respond with 404 due to non existing group in add game to group', () 
 )
 
 /**
- * DELETE ${HOST}/covida/groups/<name>/games/<id>
+ * DELETE ${HOST}/covida/groups/<id>/games/<id>
  */
 it('should delete game from group', () => frisby 
-    .del(`${HOST}/covida/groups/ToBeRemoved/games/1`)
+    .del(`${HOST}/covida/groups/4/games/1`)
     .expect('status', 200)
 )
 
 it('should respond with 404 due to non existing group in DELETE game', () => frisby 
-    .del(`${HOST}/covida/groups/None/games/`)
+    .del(`${HOST}/covida/groups/0/games/`)
     .expect('status', 404)
 )
 
 it('should respond with 404 due to non existing game in DELETE game', () => frisby 
-    .del(`${HOST}/covida/groups/ToBeRemoved/games/100`)
+    .del(`${HOST}/covida/groups/4/games/100`)
     .expect('status', 404)
 )
 
@@ -291,16 +337,24 @@ it('should respond with 404 due to non existing game in DELETE game', () => fris
  * DELETE ${HOST}/covida/groups/<group>
  */
 it('should delete group', () => frisby 
-    .del(`${HOST}/covida/groups/ToBeRemoved`)
+    .del(`${HOST}/covida/groups/7`)
     .expect('status', 200)
 )
 
 it('should respond with 404 due to non existing group in DELETE group', () => frisby 
-    .del(`${HOST}/covida/groups/None`)
+    .del(`${HOST}/covida/groups/0`)
     .expect('status', 404)
 )
 
 afterAll(() => {
-    fs.writeFileSync(GROUPS_PATH, JSON.stringify(EXPECTED_GROUPS, null, '\t'))
-    app.kill()
+    server.close()
+    const options = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    }
+
+    return fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/`, options)
 })

@@ -26,7 +26,7 @@ const IGDB_MAX_LIMIT = 500
 /**
  * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @returns {Promise} A promise containing an array of GameDetail or Error if not succeeded
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects
  */
 function getTopGames(limit) {
     if (limit > IGDB_MAX_LIMIT || limit < 0) {
@@ -73,7 +73,7 @@ function searchGames(game, limit) {
 /** 
  * Gets the games with given ids. The array returned is sorted by rating, from highest to lowest
  * @param {Array<Integer>} ids ids of games
- * @returns {Promise} A promise containing an array of GameDetail objects with given ids (can be empty)
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects with given ids (can be empty)
  */
 function getGamesByIds(ids) {
     if (!ids || ids.length == 0)

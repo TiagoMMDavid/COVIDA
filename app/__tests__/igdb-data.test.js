@@ -6,11 +6,13 @@ const SEARCHGAMES_FORTNITE_MOCK_PATH = './__tests__/mocks/searchgames-fortnite.j
 const SEARCHGAMES_EMPTY_MOCK_PATH = './__tests__/mocks/searchgames-empty.json'
 const GET_GAME_BY_ID_PATH = './__tests__/mocks/getgamebyid-1-and-2.json'
 
-const igdb = require('./../lib/repo/igdb-data')
+
 const fetch = require('node-fetch')
 const fs = require('fs')
-const Response = jest.requireActual('node-fetch').Response
 
+const igdb = require('./../lib/repo/igdb-data')
+
+const Response = jest.requireActual('node-fetch').Response
 jest.mock('node-fetch')
 
 const expectedTopThreeGames = [

@@ -62,7 +62,7 @@ function getGroups() {
 /**
  * Gets the group with the given id
  * @param {String} id 
- * @returns {Promise<Group>} Promise of a Group
+ * @returns {Promise<Group>} Promise of the group
  */
 function getGroup(id) {
     return fetch(`${URL_GROUP}${id}`)
@@ -84,7 +84,7 @@ function getGroup(id) {
  * Adds a Group object with given name and description
  * @param {String} name
  * @param {String} description 
- * @returns {Promise<Group>}
+ * @returns {Promise<Group>} Promise of the new group
  */
 function addGroup(name, description) {
     if (!name) return Promise.resolve().then(() => null)
@@ -112,7 +112,7 @@ function addGroup(name, description) {
  * @param {String} id
  * @param {String} newName 
  * @param {String} newDescription
- * @returns {Promise<Group>}
+ * @returns {Promise<Group>} Promise of the edited group
  */
 function editGroup(id, newName, newDescription) {
     return getGroup(id)
@@ -146,7 +146,7 @@ function editGroup(id, newName, newDescription) {
 /**
  * Removes the group with given id
  * @param {String} id
- * @returns {Promise<Group>} 
+ * @returns {Promise<Group>} Promise of the deleted group
  */
 function deleteGroup(id) {
     const options = {
@@ -170,7 +170,7 @@ function deleteGroup(id) {
 /**
  * Gets the games for a given group
  * @param {String} groupId
- * @returns {Promise<Game>}
+ * @returns {Promise<Array<Game>>} Promise of the group's games
  */
 function getGames(groupId) {
     return getGroup(groupId)
@@ -181,12 +181,12 @@ function getGames(groupId) {
 }
 
 /**
- * Adds a new game to the array of games of the Group with given name
+ * Adds a new game to the array of games of the Group with given id
  * If the gameId already exists in the given group, it is replaced instead
  * @param {String} groupId 
  * @param {Integer} gameId 
  * @param {String} gameName
- * @returns {Promise<Group>}
+ * @returns {Promise<Group>} Promise of the group to which the game was added
  */
 function addGame(groupId, gameId, gameName) {
     return getGroup(groupId)
@@ -223,10 +223,10 @@ function addGame(groupId, gameId, gameName) {
 }
 
 /**
- * Delete a game from the array of games of the Group with given name
+ * Delete a game from the array of games of the Group with given id
  * @param {String} groupId 
  * @param {Integer} gameId 
- * @returns {Promise<GroupGame>}
+ * @returns {Promise<GroupGame>} Promise of an object containing the deleted game, and the group from which the game was deleted
  */
 function deleteGame(groupId, gameId) {
     return getGroup(groupId)

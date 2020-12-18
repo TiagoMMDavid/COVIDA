@@ -16,7 +16,7 @@ const MAX_RATING = 100
 /**
  * Function to get the current top games of IGDB
  * @param {Number} limit limit of results
- * @returns {Promise} A promise containing an array of GameDetail or Error if not succeeded
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects
  */
 function getTopGames(limit) {
     return igdb.getTopGames(limit || DEFAULT_LIMIT)
@@ -26,7 +26,7 @@ function getTopGames(limit) {
  * Search for games by its name
  * @param {String} game game name
  * @param {Number} limit limit of results
- * @returns {Promise} A promise containing an array of GameDetail objects with given name (can be empty)
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects with given name (can be empty)
  */
 function searchGames(gameName, limit) {
     return igdb.searchGames(gameName, limit || DEFAULT_LIMIT)
@@ -35,10 +35,10 @@ function searchGames(gameName, limit) {
 /** 
  * Gets the game with given id. 
  * @param {Integer} gameId id of game
- * @returns {Promise} A promise containing a GameDetail object with given ids (can be null)
+ * @returns {Promise<GameDetail>} A promise containing a GameDetail object with given id (can be null)
  */
 function getGameById(gameId) {
-    if (!gameId) return Promise.resolve().then(() => null)
+    if (gameId == null) return Promise.resolve().then(() => null)
 
     return igdb.getGamesByIds([gameId]).then(games => {
         if (games.length == 0) return null
@@ -47,7 +47,7 @@ function getGameById(gameId) {
 }
 
 /**
- * Gets all groups
+ * Gets all groups in the database
  * @returns {Promise<Array<Group>} Promise of an array containing every group
  */
 function getGroups() {
@@ -64,7 +64,7 @@ function getGroups() {
 /**
  * Gets the group with the given id
  * @param {String} id 
- * @returns {Promise<Group>} Promise of a Group
+ * @returns {Promise<Group>} Promise of the group
  */
 function getGroup(id) {
     return db.getGroup(id)
@@ -74,7 +74,7 @@ function getGroup(id) {
  * Adds a Group object with given name and description
  * @param {String} name
  * @param {String} description 
- * @returns {Promise<Group>}
+ * @returns {Promise<Group>} Promise of the new group
  */
 function addGroup(name, description) {
     return db.addGroup(name, description)
@@ -85,16 +85,16 @@ function addGroup(name, description) {
  * @param {String} id
  * @param {String} newName 
  * @param {String} newDescription
- * @returns {Promise<Group>}
+ * @returns {Promise<Group>} Promise of the edited group
  */
 function editGroup(id, newName, newDescription) {
     return db.editGroup(id, newName, newDescription)
 }
 
 /**
- * Deletes the group with given id
+ * Removes the group with given id
  * @param {String} id
- * @returns {Promise<Group>} 
+ * @returns {Promise<Group>} Promise of the deleted group
  */
 function deleteGroup(id) {
     return db.deleteGroup(id)
@@ -103,9 +103,9 @@ function deleteGroup(id) {
 /**
  * Adds a new game to the array of games of the Group with given id
  * If the game already exists in the given group, it is replaced instead
- * @param {String} groupId 
+ * @param {String} groupId
  * @param {String} gameName
- * @returns {Promise<GroupGame>}
+ * @returns {Promise<Group>} Promise of the group to which the game was added
  */
 function addGameToGroup(groupId, gameName) {
     const groupGame = { 
@@ -133,7 +133,7 @@ function addGameToGroup(groupId, gameName) {
  * Delete a game from the array of games of the Group with given id
  * @param {String} groupId 
  * @param {Integer} gameId 
- * @returns {Promise<GroupGame>}
+ * @returns {Promise<GroupGame>} Promise of an object containing the deleted game, and the group from which the game was deleted
  */
 function deleteGameFromGroup(groupId, gameId) {
     return db.deleteGame(groupId, gameId)
@@ -144,7 +144,7 @@ function deleteGameFromGroup(groupId, gameId) {
  * @param {String} groupId 
  * @param {Number} minRating
  * @param {Number} maxRating  
- * @returns {Promise<GroupGames>)} 
+ * @returns {Promise<GroupGames>)} promise of a GroupGames object, containing the group and its games
  */
 function listGroupGames(groupId, minRating, maxRating) {
     minRating = minRating || MIN_RATING
@@ -158,7 +158,7 @@ function listGroupGames(groupId, minRating, maxRating) {
     return db.getGroup(groupId)
         .then(group => {
             if (!group) return groupGames
-
+            
             groupGames.group = group
             if (maxRating < minRating) return groupGames
 
@@ -167,7 +167,7 @@ function listGroupGames(groupId, minRating, maxRating) {
             return igdb.getGamesByIds(ids)
         })
         .then(games => {
-            if (groupGames.group)
+            if (games != groupGames)
                 groupGames.games = games.filter(game => game.total_rating >= minRating && game.total_rating <= maxRating)
 
             return groupGames
