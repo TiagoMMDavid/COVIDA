@@ -147,7 +147,7 @@ it('should respond with 400 due to missing name in search', () => frisby
 )
 
 it('should respond with 400 due to invalid limit in search', () => frisby
-    .get(`${HOST}/covida/games/search?limit=1000`)
+    .get(`${HOST}/covida/games/search?name=Fortnite&limit=1000`)
     .expect('status', 400)
 )
 
@@ -324,7 +324,7 @@ it('should delete game from group', () => frisby
 )
 
 it('should respond with 404 due to non existing group in DELETE game', () => frisby 
-    .del(`${HOST}/covida/groups/0/games/`)
+    .del(`${HOST}/covida/groups/0/games/100`)
     .expect('status', 404)
 )
 
