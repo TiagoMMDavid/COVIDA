@@ -40,8 +40,15 @@ function init(groupsIndex, done) {
         resp.status(err.status || 500)
         resp.render('error', {
             'status': err.status,
-            'message': err.message,
-            'stack': err.stack
+            'message': err.message
+        })
+    })
+
+    app.use((req, resp, next) => {
+        resp.status(404)
+        resp.render('error', {
+            'status': 404,
+            'message': 'Sorry, that page does not exist!'
         })
     })
 

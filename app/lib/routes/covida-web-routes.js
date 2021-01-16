@@ -70,7 +70,6 @@ function handlerTopGames(req, resp, next) {
 
 function handlerSearchGame(req, resp, next) {
     const limit = req.query.limit || '10'
-    console.log(limit)
     const err = req.flash('limitError')
     const name = req.query.name
     if (name) {
