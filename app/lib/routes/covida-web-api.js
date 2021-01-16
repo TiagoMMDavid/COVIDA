@@ -1,7 +1,6 @@
 'use strict'
 
 const router = require('express').Router()
-const bodyParser = require('body-parser').urlencoded({ extended: false })
 const service = require('./../repo/covida-services')
 
 module.exports = router
@@ -11,7 +10,22 @@ const INTERNAL_ERROR = {
     message: 'Internal Server Error' 
 }
 
-router.get('/covida/games/search', (req, resp, next) => {
+router.get('/covida/games/search', handlerSearchGame)
+router.get('/covida/games/top', handlerTopGames)
+router.get('/covida/games/:game', handlerGameById)
+router.get('/covida/groups/:group/games', handlerGroupGames)
+router.get('/covida/groups/:group', handlerGroupById)
+router.get('/covida/groups', handlerGroups)
+router.get('/covida', handlerHomepage)
+
+router.put('/covida/groups/:group/games', handlerAddGameToGroup)
+router.put('/covida/groups/:group', handlerEditGroup)
+router.put('/covida/groups', handlerAddGroup)
+
+router.delete('/covida/groups/:group/games/:game', handlerDeleteGame)
+router.delete('/covida/groups/:group', handlerDeleteGroup)
+
+function handlerSearchGame(req, resp, next) {
     const name = req.query.name
     if (name) {
         service.searchGames(name, req.query.limit)
@@ -33,9 +47,9 @@ router.get('/covida/games/search', (req, resp, next) => {
         }
         return next(err)
     }
-})
+}
 
-router.get('/covida/games/top', (req, resp, next) => {
+function handlerTopGames(req, resp, next) {
     service.getTopGames(req.query.limit)
         .then(games => {
             if (!games) {
@@ -48,9 +62,9 @@ router.get('/covida/games/top', (req, resp, next) => {
             resp.json(games)
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.get('/covida/games/:game', (req, resp, next) => {
+function handlerGameById(req, resp, next) {
     service.getGameById(req.params.game)
         .then(game => {
             if (!game) {
@@ -63,9 +77,9 @@ router.get('/covida/games/:game', (req, resp, next) => {
             resp.json(game)
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.get('/covida/groups/:group/games', (req, resp, next) => {
+function handlerGroupGames(req, resp, next) {
     service.listGroupGames(req.params.group, req.query.min, req.query.max)
         .then(groupGames => {
             const group = groupGames.group
@@ -88,9 +102,9 @@ router.get('/covida/groups/:group/games', (req, resp, next) => {
             resp.json(games)
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.get('/covida/groups/:group', (req, resp, next) => {
+function handlerGroupById(req, resp, next) {
     service.getGroup(req.params.group)
         .then(group => {
             if (!group) {
@@ -103,36 +117,36 @@ router.get('/covida/groups/:group', (req, resp, next) => {
 
             const host = req.headers.host
             group.games = group.games.map(game => {
-                game.gameDetails = `http://${host}/covida/games/${game.id}`
+                game.gameDetails = `http://${host}/api/covida/games/${game.id}`
                 return game
             })
             resp.json(group)
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.get('/covida/groups', (req, resp, next) => {
+function handlerGroups(req, resp, next) {
     service.getGroups()
         .then(groups => {
             const host = req.headers.host
             groups = groups.map(group => {
-                group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
+                group.groupDetails = encodeURI(`http://${host}/api/covida/groups/${group.id}`)
                 return group
             })
             resp.json(groups)
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.get('/covida', (req, resp, next) => {
+function handlerHomepage(req, resp, next) {
     const host = req.headers.host
     resp.json({
-        topGames: `http://${host}/covida/games/top`,
-        getGroups: `http://${host}/covida/groups`
+        topGames: `http://${host}/api/covida/games/top`,
+        getGroups: `http://${host}/api/covida/groups`
     })
-})
+}
 
-router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
+function handlerAddGameToGroup(req, resp, next) {
     const groupId = req.params.group
     const gameName = req.body.name
     if (!gameName) {
@@ -169,14 +183,14 @@ router.put('/covida/groups/:group/games', bodyParser, (req, resp, next) => {
             resp.json({
                 status: 201,
                 message: `Game '${game.name}' added to group '${group.name}' (id '${group.id}') successfully`,
-                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`),
-                gameDetails: `http://${host}/covida/games/${game.id}`
+                groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`),
+                gameDetails: `http://${host}/api/covida/games/${game.id}`
             })
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
+function handlerEditGroup(req, resp, next) {
     const groupId = req.params.group
     const newName = req.body.name
     const newDescription = req.body.description
@@ -203,13 +217,13 @@ router.put('/covida/groups/:group', bodyParser, (req, resp, next) => {
             resp.json({
                 status: 200,
                 message: `Group '${groupId}' edited successfully`,
-                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`)
+                groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`)
             })
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.put('/covida/groups', bodyParser, (req, resp, next) => {
+function handlerAddGroup(req, resp, next) {
     const name = req.body.name
     const description = req.body.description
     if (!name) {
@@ -227,13 +241,13 @@ router.put('/covida/groups', bodyParser, (req, resp, next) => {
             resp.json({
                 status: 201,
                 message: `Group '${group.name}' (id '${group.id}') added successfully`,
-                groupDetails: encodeURI(`http://${host}/covida/groups/${group.id}`)
+                groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`)
             })
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
+function handlerDeleteGame(req, resp, next) {
     service.deleteGameFromGroup(req.params.group, req.params.game)
         .then(groupGame => {
             const group = groupGame.group
@@ -259,9 +273,9 @@ router.delete('/covida/groups/:group/games/:game', (req, resp, next) => {
             })
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
 
-router.delete('/covida/groups/:group', (req, resp, next) => {
+function handlerDeleteGroup(req, resp, next) {
     service.deleteGroup(req.params.group)
         .then(group => {
             if (!group) {
@@ -277,4 +291,4 @@ router.delete('/covida/groups/:group', (req, resp, next) => {
             })
         })
         .catch(err => next(INTERNAL_ERROR))
-})
+}
