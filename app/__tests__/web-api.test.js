@@ -229,11 +229,11 @@ it('should respond with 400 due to invalid min and max in /<group>/games', () =>
 )
 
 /**
- * PUT ${HOST}/api/covida/groups
+ * POST ${HOST}/api/covida/groups
  */
 it('should add group', () => frisby
     .fetch(`${HOST}/api/covida/groups`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'name=newGroup&description=newDescription'
     })
@@ -241,7 +241,7 @@ it('should add group', () => frisby
 )
 
 it('should respond with 400 due to no group name specified in add group', () => frisby
-    .put(`${HOST}/api/covida/groups`)
+    .fetch(`${HOST}/api/covida/groups`, {method: 'POST'})
     .expect('status', 400)
 )
 

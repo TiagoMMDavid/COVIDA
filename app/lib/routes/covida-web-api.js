@@ -20,7 +20,7 @@ router.get('/covida', handlerHomepage)
 
 router.put('/covida/groups/:group/games', handlerAddGameToGroup)
 router.put('/covida/groups/:group', handlerEditGroup)
-router.put('/covida/groups', handlerAddGroup)
+router.post('/covida/groups', handlerAddGroup)
 
 router.delete('/covida/groups/:group/games/:game', handlerDeleteGame)
 router.delete('/covida/groups/:group', handlerDeleteGroup)
@@ -183,6 +183,8 @@ function handlerAddGameToGroup(req, resp, next) {
             resp.json({
                 status: 201,
                 message: `Game '${game.name}' added to group '${group.name}' (id '${group.id}') successfully`,
+                matchId: game.id,
+                matchName: game.name,
                 groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`),
                 gameDetails: `http://${host}/api/covida/games/${game.id}`
             })
@@ -241,6 +243,7 @@ function handlerAddGroup(req, resp, next) {
             resp.json({
                 status: 201,
                 message: `Group '${group.name}' (id '${group.id}') added successfully`,
+                groupId: group.id,
                 groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`)
             })
         })

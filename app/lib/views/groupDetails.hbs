@@ -1,0 +1,27 @@
+<h3 style="text-align: center;">{{{group.name}}}</h3>
+{{#if group.description}}<h5 style="text-align: center;">{{{group.description}}}</h5>{{/if}}
+<div class="messages"></div>
+<br>
+<div class="gameForm">
+    <div class="row">
+        <div class="col">
+            <input type="text" id="name" class="form-control mb-2" placeholder="Search" autocomplete="off" required>
+        </div>
+        <button class="btn btn-primary mb-2">Add Game</button>
+    </div>
+</div>
+<table class="table">
+{{#each group.games}}
+    <tr class="gameItem" data-covida-game-id={{id}}>
+        <td class="gameName"><b>{{name}}</b></td>
+        <td><a href='{{gameDetails}}' class="btn btn-primary">See game details</a></td>
+        <td><button class="btn btn-danger">Delete Game</button></td>
+    </tr>
+{{/each}}
+</table>
+<div class="emptyMessage">
+    {{#if isEmpty}}
+        <hr>
+        <h5 style="text-align: center;">This group has no games</h5>
+    {{/if}}
+</div>

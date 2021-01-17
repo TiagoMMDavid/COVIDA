@@ -10,60 +10,18 @@ const INTERNAL_ERROR = {
     message: 'Internal server error' 
 }
 
-/*
-router.get('/covida/groups/:group/games', handlerGroupGames)
-router.get('/covida/groups/:group', handlerGroupById)
-*/
-
 router.get('/covida/games/top', handlerTopGames)
 router.get('/covida/games/search', handlerSearchGame)
 router.get('/covida/games/:game', handlerGameById)
+router.get('/covida/groups/:group', isAuthenticated, handlerGroupById)
 router.get('/covida/groups', isAuthenticated, handlerGroups)
 router.get('/covida', handlerHomepage)
 
-router.post('/covida/groups', handlerAddGroup)
-/*
-router.put('/covida/groups/:group/games', handlerAddGameToGroup)
-router.put('/covida/groups/:group', handlerEditGroup)
-
-router.delete('/covida/groups/:group/games/:game', handlerDeleteGame)
-router.delete('/covida/groups/:group', handlerDeleteGroup)
-*/
+//TODO: router.put('/covida/groups/:group', handlerEditGroup)
 
 function isAuthenticated(req, resp, next) {
     if(req.user) next()
     else resp.redirect('/covida/login')
-}
-
-function handlerGroups(req, resp, next) {
-    service.getGroups()
-        .then(groups => {
-            const host = req.headers.host
-            groups = groups.map(group => {
-                group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
-                if (group.description.length == 0) {
-                    group.description = null
-                }
-                return group
-            })
-            resp.render('groupsList', {
-                'groups': groups,
-                'isEmpty': groups.length == 0,
-                'user': req.user
-            })
-        })
-        .catch(err => next(INTERNAL_ERROR))
-}
-
-function handlerAddGroup(req, resp, next) {
-    const name = req.body.name
-    const description = req.body.description
-
-    service.addGroup(name, description)
-        .then(() => {
-            resp.redirect('/covida/groups')
-        })
-        .catch(err => next(INTERNAL_ERROR))
 }
 
 function handlerHomepage(req, resp, next) {
@@ -111,9 +69,9 @@ function handlerGameById(req, resp, next) {
     service.getGameById(req.params.game)
         .then(game => {
             if (!game) {
-                resp.redirect('/404')
-                return
+                return resp.redirect('/404')
             }
+
             if (game.total_rating) {
                 game.total_rating = game.total_rating.toFixed(2)
             }
@@ -122,7 +80,7 @@ function handlerGameById(req, resp, next) {
                 'user': req.user
             })
         })
-    .catch(err => next(INTERNAL_ERROR))
+        .catch(err => next(INTERNAL_ERROR))
 }
 
 function handlerSearchGame(req, resp, next) {
@@ -160,4 +118,49 @@ function handlerSearchGame(req, resp, next) {
             'user': req.user
         })
     }
+}
+
+function handlerGroups(req, resp, next) {
+    service.getGroups()
+        .then(groups => {
+            const host = req.headers.host
+            groups = groups.map(group => {
+                group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
+
+                if (group.description.length == 0)
+                    group.description = null
+                return group
+            })
+            resp.render('groupsList', {
+                'groups': groups,
+                'isEmpty': groups.length == 0,
+                'user': req.user
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGroupById(req, resp, next) {
+    service.getGroup(req.params.group)
+        .then(group => {
+            if (!group) {
+                return resp.redirect('/404')
+            }
+
+            const host = req.headers.host
+            group.games = group.games.map(game => {
+                game.gameDetails = `http://${host}/covida/games/${game.id}`
+
+                if (game.total_rating) 
+                    game.total_rating = game.total_rating.toFixed(2)
+                return game
+            })
+
+            resp.render('groupDetails', {
+                'group': group,
+                'isEmpty': group.games.length == 0,
+                'user': req.user
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
 }

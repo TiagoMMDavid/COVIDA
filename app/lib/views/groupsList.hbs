@@ -1,28 +1,30 @@
 <h3 style="text-align: center;">Your groups</h3>
 <div class="messages"></div>
 <br>
-<form method="POST">
+<div class="groupForm">
     <div class="row">
         <div class="col">
-            <input type="text" name="name" class="form-control mb-2" placeholder="Name" required>
+            <input type="text" id="name" class="form-control mb-2" placeholder="Name" autocomplete="off" required>
         </div>
         <div class="col">
-            <input type="text" name="description" class="form-control mb-2" placeholder="Description"/>
+            <input type="text" id="description" class="form-control mb-2" autocomplete="off" placeholder="Description"/>
         </div>
-        <input type="submit" value="Add Group" class="btn btn-primary mb-2"/>
+        <button class="btn btn-primary mb-2">Add Group</button>
     </div>
-</form>
+</div>
 <table class="table">
 {{#each groups}}
     <tr class="groupItem" data-covida-group-id={{id}}>
-        <td class="groupName"><b>{{name}}</b></td>
-        <td><i>{{#if description}}{{description}}{{else}}No description available{{/if}}</i></td>
+        <td class="groupName"><b>{{{name}}}</b></td>
+        <td><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
         <td><a href='{{groupDetails}}' class="btn btn-primary">See group details</a></td>
         <td><button class="btn btn-danger">Delete Group</button></td>
     </tr>
 {{/each}}
-{{#if isEmpty}}
-    <hr>
-    <h5 style="text-align: center;">You don't have any groups</h5>
-{{/if}}
 </table>
+<div class="emptyMessage">
+    {{#if isEmpty}}
+        <hr>
+        <h5 style="text-align: center;">You don't have any groups</h5>
+    {{/if}}
+</div>
