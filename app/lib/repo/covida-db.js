@@ -99,7 +99,7 @@ function addGroup(name, description) {
         body: JSON.stringify(newGroup)
     }
 
-    return fetch(URL_GROUP, options)
+    return fetch(`${URL_GROUP}?refresh`, options)
         .then(res => res.json())
         .then(group => {
             newGroup.id = group._id
@@ -131,7 +131,7 @@ function editGroup(id, newName, newDescription) {
                 body: JSON.stringify(group)
             }
 
-            return fetch(`${URL_GROUP}${id}`, options)
+            return fetch(`${URL_GROUP}${id}?refresh`, options)
                 .then(res => res.json())
                 .then(json => {
                     if (json.result == 'updated') {
@@ -159,7 +159,7 @@ function deleteGroup(id) {
 
     return getGroup(id)
         .then(group =>
-            fetch(`${URL_GROUP}${id}`, options)
+            fetch(`${URL_GROUP}${id}?refresh`, options)
                 .then(res => res.json())
                 .then(json => {
                     if (json.result == 'deleted') return group
@@ -210,7 +210,7 @@ function addGame(groupId, gameId, gameName) {
                 body: JSON.stringify(group)
             }
 
-            return fetch(`${URL_GROUP}${groupId}`, options)
+            return fetch(`${URL_GROUP}${groupId}?refresh`, options)
                 .then(res => res.json())
                 .then(json => {
                     if (json.result == 'updated') {
@@ -263,7 +263,7 @@ function deleteGame(groupId, gameId) {
                 body: JSON.stringify(group)
             }
 
-            return fetch(`${URL_GROUP}${groupId}`, options)
+            return fetch(`${URL_GROUP}${groupId}?refresh`, options)
                 .then(res => res.json())
                 .then(json => {
                     if (json.result == 'updated') {

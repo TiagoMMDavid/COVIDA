@@ -1,0 +1,13 @@
+<h3>{{game.name}}</h3>
+<table class="table table-striped table-bordered">
+    <tr>
+        <td>Summary</td>
+        <td>Followers</td>
+        <td>Rating</td>
+    </tr>
+    <tr>
+        <td>{{#if game.summary}}{{game.summary}}{{else}}N/A{{/if}}</td>
+        <td>{{#if game.follows}}{{game.follows}}{{else}}N/A{{/if}}</td>
+        <td>{{#if game.total_rating}}{{game.total_rating}}{{else}}N/A{{/if}}</td>
+    </tr>
+</table>

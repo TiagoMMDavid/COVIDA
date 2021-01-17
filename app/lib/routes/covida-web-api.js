@@ -7,7 +7,7 @@ module.exports = router
 
 const INTERNAL_ERROR = {
     status: 500,
-    message: 'Internal Server Error' 
+    message: 'Internal server error' 
 }
 
 router.get('/covida/games/search', handlerSearchGame)

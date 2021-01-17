@@ -5,8 +5,11 @@ const expressSession = require('express-session')({ secret: 'keyboard cat', resa
 const express = require('express')
 const bodyParser = require('body-parser').urlencoded({ extended: false })
 const flash = require('connect-flash')
+const passport = require('passport')
+
 const routesApi = require('./routes/covida-web-api')
 const routesWebApi = require('./routes/covida-web-routes')
+const routesAuth = require('./routes/covida-web-auth')
 const sitemap = require('express-sitemap-html')
 
 const PORT = 8000
@@ -27,9 +30,14 @@ function init(groupsIndex, done) {
     app.use(expressSession)
     app.use(flash())
 
+    app.use(passport.initialize())
+    app.use(passport.session())  
+    
     app.use('/api', routesApi)
-    app.use(routesWebApi)
     sitemap.swagger('COVIDA', app)
+
+    app.use(routesWebApi)
+    app.use(routesAuth)
 
     app.use('/api', (err, req, resp, next) => {
         resp.status(err.status || 500)

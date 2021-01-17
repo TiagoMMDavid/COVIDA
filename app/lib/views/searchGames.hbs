@@ -16,26 +16,29 @@
             <input type="text" name="name" class="form-control" value="{{searchedGame}}" placeholder="Enter game name" required>     
         </div>
         <div class="form-group">
-            <label>Number of games</label>
-            <input class="form-control" type="number" name="limit" value={{limit}} placeholder="Maximum amount of games" min="1" max="500" required/>
+            <label>Maximum Amount of Games</label>
+            <input class="form-control" type="number" name="limit" value="{{limit}}" placeholder="Max games" min="1" max="500" required/>
         </div>
         <input type="submit" value="Search" class="btn btn-primary mb-2"/>
     </form>
     <hr>
     {{#each games}}
-    <h3>{{name}}</h3>
-    <table class="table table-striped table-bordered">
-        <tr>
-            <td>Summary</td>
-            <td>Followers</td>
-            <td>Rating</td>
-        </tr>
-        <tr>
-            <td>{{#if summary}}{{summary}}{{else}}N/A{{/if}}</td>
-            <td>{{#if follows}}{{follows}}{{else}}N/A{{/if}}</td>
-            <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
-        </tr>
-    </table>
-    <br>
+        <h3>{{name}}</h3>
+        <table class="table table-striped table-bordered">
+            <tr>
+                <td>Summary</td>
+                <td>Followers</td>
+                <td>Rating</td>
+            </tr>
+            <tr>
+                <td>{{#if summary}}{{summary}}{{else}}N/A{{/if}}</td>
+                <td>{{#if follows}}{{follows}}{{else}}N/A{{/if}}</td>
+                <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
+            </tr>
+        </table>
+        <br>
     {{/each}}
+    {{#if isEmpty}}
+        <h5 style="text-align: center;">No results found</h5>
+    {{/if}}
 </div>

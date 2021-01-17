@@ -19,6 +19,7 @@
     "express-sitemap-html": "^1.2.2",
     "hbs": "^4.1.1",
     "node-fetch": "^2.6.1",
+    "passport": "^0.4.1",
     "urllib": "^2.36.1"
   },
   "devDependencies": {
