@@ -193,8 +193,8 @@ function addGroupToTable(groupId, groupURL, name, description) {
             `<tr class="groupItem" data-covida-group-id=${groupId}>
                 <td class="groupName"><b>${name}</b></td>
                 <td><i>${description || 'No description available'}</i></td>
-                <td><a href='${groupURL}' class="btn btn-primary">See group details</a></td>
-                <td><button class="btn btn-danger">Delete Group</button></td>
+                <td><a href='${groupURL}' class="btn btn-primary btn-block">See group details</a></td>
+                <td><button class="btn btn-danger btn-block">Delete Group</button></td>
             </tr>`
         )
 
@@ -219,8 +219,8 @@ function addGameToGroupTable(gameId, gameURL, gameName) {
         .insertAdjacentHTML('beforeend',  
             `<tr class="gameItem" data-covida-game-id=${gameId}>
                 <td class="gameName"><b>${gameName}</b></td>
-                <td><a href='${gameURL}' class="btn btn-primary">See game details</a></td>
-                <td><button class="btn btn-danger">Delete Game</button></td>
+                <td><a href='${gameURL}' class="btn btn-primary btn-block">See game details</a></td>
+                <td><button class="btn btn-danger btn-block">Delete Game</button></td>
             </tr>`
         )
 

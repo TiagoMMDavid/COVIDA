@@ -9,7 +9,9 @@
         <div class="col">
             <input type="text" id="description" class="form-control mb-2" autocomplete="off" placeholder="Description"/>
         </div>
-        <button class="btn btn-primary mb-2">Add Group</button>
+        <div class="col-3">
+            <button class="btn btn-primary btn-block mb-2">Add Group</button>
+        </div>
     </div>
 </div>
 <table class="table">
@@ -17,8 +19,8 @@
     <tr class="groupItem" data-covida-group-id={{id}}>
         <td class="groupName"><b>{{{name}}}</b></td>
         <td><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
-        <td><a href='{{groupDetails}}' class="btn btn-primary">See group details</a></td>
-        <td><button class="btn btn-danger">Delete Group</button></td>
+        <td><a href='{{groupDetails}}' class="btn btn-primary btn-block">See group details</a></td>
+        <td><button class="btn btn-danger btn-block">Delete Group</button></td>
     </tr>
 {{/each}}
 </table>
