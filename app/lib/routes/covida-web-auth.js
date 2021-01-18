@@ -33,8 +33,8 @@ function handlerLogin(req, resp, next) {
 }
 
 function handlerLoginPost(req, resp, next) {
-    const username = req.body.username
-    const user = users.find(user => user.username == username)
+    const username = req.body.username.toLowerCase()
+    const user = users.find(user => user.username.toLowerCase() == username)
     if (user) {
         const hash = crypto.createHmac(HASH_ALGORITHM, SECRET_KEY)
         const password = hash.update(req.body.password).digest('hex')
