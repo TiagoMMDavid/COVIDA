@@ -29,18 +29,20 @@
                 <h3 style="display: inline;">{{name}}</h3>
             </div>
             {{#if ../user}}
-                <div class="groupSelectForm col">
-                    <div>
-                        <select class="custom-select ml-auto mb-2" id="groupSelect" data-covida-game-id="{{id}}" autocomplete="off">
-                            <option selected>Choose...</option>
-                            {{#each ../user.groups}}
-                                <option value="{{id}}">{{{name}}}</option>
-                            {{/each}}
-                        </select>
+                <div class="col">
+                    <div class="groupSelectForm row">
+                        <div class="col">
+                            <select class="custom-select" id="groupSelect" data-covida-game-id="{{id}}" autocomplete="off">
+                                <option selected>Choose...</option>
+                                {{#each ../user.groups}}
+                                    <option value="{{id}}">{{{name}}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-primary btn-block">Add to Group</button>
+                        </div> 
                     </div>
-                    <div>
-                        <button class="btn btn-primary btn-block">Add to Group</button>
-                    </div> 
                 </div>
             {{/if}}
         </div>
