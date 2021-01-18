@@ -11,14 +11,13 @@
 <div class="collapse" id="editGroupForm">
     <div class="row">
         <div class="col">
-            <input type="text" class="form-control mb-2" placeholder="{{{group.name}}}" id="editGroupFormName">
+            <input type="text" class="form-control mb-2" placeholder="{{{group.name}}}" autocomplete="off" id="editGroupName">
         </div>
         <div class="col">
-            <input type="text" class="form-control mb-2" placeholder=
+            <input type="text" class="form-control mb-2" autocomplete="off" id="editGroupDescription" placeholder=
                 "{{#if group.description}}{{{group.description}}}
                 {{else}}New Description
-                {{/if}}"
-            >
+                {{/if}}">
         </div>
         <div class="col-3">
             <button class="btn btn-primary btn-block mb-2">Submit</button>
@@ -26,15 +25,9 @@
     </div>
 </div>
 <div class="messages"><br></div>
-<div class="gameForm">
- 
-    <div class="row">
-        <div class="col-7">
-            <input type="text" id="name" class="form-control mb-2" placeholder="Search" autocomplete="off" required>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary mb-2 btn-block">Add Game</button>
-        </div>
+<div class="row">
+    <div class="col">
+        <a class="btn btn-primary mb-2 btn-block" href="/covida/games/search">Add a game</a>
     </div>
 </div>
 <table class="table">

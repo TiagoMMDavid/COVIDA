@@ -17,8 +17,6 @@ router.get('/covida/groups/:group', isAuthenticated, handlerGroupById)
 router.get('/covida/groups', isAuthenticated, handlerGroups)
 router.get('/covida', handlerHomepage)
 
-//TODO: router.put('/covida/groups/:group', handlerEditGroup)
-
 function isAuthenticated(req, resp, next) {
     if(req.user) next()
     else resp.redirect('/covida/login')
@@ -69,7 +67,11 @@ function handlerGameById(req, resp, next) {
     service.getGameById(req.params.game)
         .then(game => {
             if (!game) {
-                return resp.redirect('/404')
+                const err = {
+                    'status': 404,
+                    'message': 'Game does not exist!'
+                }
+                return next(err)
             }
 
             if (game.total_rating) {
@@ -124,13 +126,15 @@ function handlerGroups(req, resp, next) {
     service.getGroups()
         .then(groups => {
             const host = req.headers.host
-            groups = groups.map(group => {
-                group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
-
-                if (group.description.length == 0)
-                    group.description = null
-                return group
-            })
+            const user = req.user
+            groups = groups
+                .filter(group => user.groups.some(userGroup => userGroup.id == group.id))
+                .map(group => {
+                    group.groupDetails = encodeURI(`http://${host}/covida/groups/${group.id}`)
+                    if (group.description.length == 0)
+                        group.description = null
+                    return group
+                })
             resp.render('groupsList', {
                 'groups': groups,
                 'isEmpty': groups.length == 0,
@@ -143,8 +147,12 @@ function handlerGroups(req, resp, next) {
 function handlerGroupById(req, resp, next) {
     service.getGroup(req.params.group)
         .then(group => {
-            if (!group) {
-                return resp.redirect('/404')
+            if (!group || !req.user.groups.some(userGroup => userGroup.id == group.id)) {
+                const err = {
+                    'status': 404,
+                    'message': 'Group does not exist!'
+                }
+                return next(err)
             }
 
             const host = req.headers.host

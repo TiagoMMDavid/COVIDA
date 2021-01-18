@@ -1,26 +1,19 @@
 const router = require('express').Router()
 const passport = require('passport')
-
-module.exports = router
-
-//TODO: CHANGE THIS
+const users = require('../repo/covida-users')
 const crypto = require('crypto')
+
 const HASH_ALGORITHM = 'sha256'
 const SECRET_KEY = 'changeit'
-const users = []
 
-/**
- * @typedef User
- * @property {String} username
- * @property {String} password
- * @property {Array<String>} groups
- */
+module.exports = router
 
 router.get('/covida/login', handlerLogin)
 router.post('/covida/login', handlerLoginPost)
 router.get('/covida/signup', handlerSignup)
 router.post('/covida/signup', handlerSignupPost)
 router.get('/covida/logout', handlerLogout)
+router.get('/covida/user-info', handlerGetUserInfo)
 
 function handlerLogin(req, resp, next) {
     resp.render('login', {
@@ -34,25 +27,27 @@ function handlerLogin(req, resp, next) {
 
 function handlerLoginPost(req, resp, next) {
     const username = req.body.username.toLowerCase()
-    const user = users.find(user => user.username.toLowerCase() == username)
-    if (user) {
-        const hash = crypto.createHmac(HASH_ALGORITHM, SECRET_KEY)
-        const password = hash.update(req.body.password).digest('hex')
-        if (user.password == password) {
-            req.logIn(user, (err) => {
-                if(err) return next(err)
-                resp.redirect('/covida')
-            })
-        } else {
-            req.flash('userError', 'Invalid credentials!')
-            req.flash('userName', req.body.username)
-            resp.redirect('/covida/login')
-        }
-    } else {
-        req.flash('userError', 'User not registered!')
-        req.flash('userName', req.body.username)
-        resp.redirect('/covida/login')
-    }
+    users.getUser(username)
+        .then(user => {
+            if (user) {
+                const hash = crypto.createHmac(HASH_ALGORITHM, SECRET_KEY)
+                const password = hash.update(req.body.password).digest('hex')
+                if (user.password == password) {
+                    req.logIn(user, (err) => {
+                        if(err) return next(err)
+                        resp.redirect('/covida')
+                    })
+                } else {
+                    req.flash('userError', 'Invalid credentials!')
+                    req.flash('userName', req.body.username)
+                    resp.redirect('/covida/login')
+                }
+            } else {
+                req.flash('userError', 'User not registered!')
+                req.flash('userName', req.body.username)
+                resp.redirect('/covida/login')
+            }
+        })
 }
 
 function handlerSignup(req, resp, next) {
@@ -66,13 +61,15 @@ function handlerSignup(req, resp, next) {
 
 function handlerSignupPost(req, resp, next) {
     const hash = crypto.createHmac(HASH_ALGORITHM, SECRET_KEY)
-    const user = {
-        'username': req.body.username,
-        'password': hash.update(req.body.password).digest('hex')
-    }
-    users.push(user)
-    req.flash('userSuccess', 'Sign up complete! Try to log in')
-    resp.redirect('/covida/login')
+    users.addUser(req.body.username, hash.update(req.body.password).digest('hex'))
+        .then(user => {
+            if (!user) {
+                req.flash('userError', 'Username already exists!')  
+                return resp.redirect('/covida/signup')
+            }
+            req.flash('userSuccess', 'Sign up complete! Try to log in')
+            resp.redirect('/covida/login')
+        })
 }
 
 function handlerLogout(req, resp, next) {
@@ -80,11 +77,24 @@ function handlerLogout(req, resp, next) {
     resp.redirect('/covida')
 }
 
+function handlerGetUserInfo(req, resp, next) {
+    const user = req.user
+    if (user) {
+        return resp.json(user)
+    } 
+    resp.status(400)
+    resp.json({
+        'status': 400,
+        'message': 'User not logged in!'
+    })
+}
+
+
 passport.serializeUser(function(user, done) {
     done(null, user.username)
 })
   
 passport.deserializeUser(function(username, done) {
-    const user = users.find(user => user.username == username)
-    done(null, user)
+    users.getUser(username)
+        .then(user => done(null, user))
 })

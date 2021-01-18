@@ -28,6 +28,17 @@ function setup() {
         description.addEventListener('keyup', (event) => mapEnterToButton(event, button))
     }
 
+    // Edit group
+    const editGroupForm = document.querySelector('#editGroupForm')
+    if (editGroupForm) {
+        const groupName = editGroupForm.querySelector('#editGroupName')
+        const groupDescription = editGroupForm.querySelector('#editGroupDescription')
+        const button = editGroupForm.querySelector('button')
+        button.addEventListener('click', () => handlerEditGroup(groupName, groupDescription))
+        groupDescription.addEventListener('keyup', (event) => mapEnterToButton(event, button))
+        groupName.addEventListener('keyup', (event) => mapEnterToButton(event, button))
+    }
+
     // Remove game from group
     document
         .querySelectorAll('.gameItem')
@@ -37,13 +48,12 @@ function setup() {
         })
 
     // Add game to group
-    const gameForm = document.querySelector('.gameForm')
-    if (gameForm) {
-        const name = gameForm.querySelector('#name')
-        const button = gameForm.querySelector('button')
-        button.addEventListener('click', () => handlerAddGame(name))
-        name.addEventListener('keyup', (event) => mapEnterToButton(event, button))
-    }
+    document.querySelectorAll('.groupSelectForm')
+        .forEach(item => {
+            const button = item.querySelector('button')
+            const select = item.querySelector('select')
+            button.addEventListener('click', () => handlerAddGame(select))
+        })
 }
 
 function handlerValidatePassword() {
@@ -57,24 +67,68 @@ function handlerValidatePassword() {
     }
 }
 
-function handlerRemoveGroup(item, groupName, groupId) {
+function handlerEditGroup(groupName, groupDescription) {
+    if (groupDescription.value.length == 0 && groupName.value.length == 0) {
+        return alertMsg('You need to change at least one field')
+    }
+    const name = sanitizeInput(groupName.value)
+    const description = sanitizeInput(groupDescription.value)
+
     const loc = document.location.href
-    const path =  `${loc.replace('/covida', '/api/covida')}/${groupId}`
-    fetch(path, { method: 'DELETE' })
+    const path = loc.replace('/covida', '/api/covida')
+    fetch(path, { 
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}`
+    })
         .then(resp => {
             if (resp.status != 200) alert(resp.statusText)
             else {
-                alertMsg(`Group "${sanitizeInput(groupName)}" successfully removed.`, 'success')
-                item.remove()
+                alertMsg('Group successfully edited.', 'success')
+                groupName.value = ''
+                groupDescription.value = ''
+                $('.collapse').collapse('hide')
+                if (name)
+                    document.querySelector('#groupName').innerHTML = name
+                if (description)
+                    document.querySelector('#groupDescription').textContent = description
+            } 
 
-                // Check if table is empty
-                if (document.querySelectorAll('tr').length == 0) {
-                    document
-                        .querySelector('.emptyMessage')
-                        .innerHTML = '<hr>\n<h5 style="text-align: center;">You don\'t have any groups</h5>'
-                }
+        })
+        .catch(err => alertMsg(err))
+}
 
+function handlerRemoveGroup(item, groupName, groupId) {
+    const loc = document.location.href
+
+    fetch(loc.replace('/groups', '/user-info'))
+        .then(resp => resp.json())
+        .then(user => {
+            if (user.status) {
+                document.location.reload()
+                return null
             }
+            const path = `${loc.replace('/covida', '/api/covida')}/${groupId}`
+            fetch(path, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `username=${encodeURIComponent(user.username)}`
+            })
+                .then(resp => {
+                    if (resp.status != 200) alert(resp.statusText)
+                    else {
+                        alertMsg(`Group "${sanitizeInput(groupName)}" successfully removed.`, 'success')
+                        item.remove()
+        
+                        // Check if table is empty
+                        if (document.querySelectorAll('tr').length == 0) {
+                            document
+                                .querySelector('.emptyMessage')
+                                .innerHTML = '<hr>\n<h5 style="text-align: center;">You don\'t have any groups</h5>'
+                        }
+        
+                    }
+                })
         })
         .catch(err => alertMsg(err))
 }
@@ -108,33 +162,44 @@ function handlerRemoveGame(item, gameName, gameId) {
  */
 function handlerAddGroup(nameElement, descriptionElement) {
     if (nameElement.reportValidity()) {
+        const loc = document.location.href
+
         // Replace HTML tags
         const name = sanitizeInput(nameElement.value)
         const description = sanitizeInput(descriptionElement.value)
-
-        const loc = document.location.href
-        const path =  loc.replace('/covida', '/api/covida')
-        fetch(path, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}`
-        })
-            .then(resp => {
-                if (resp.status != 201) alert(resp.statusText)
-                else {
-                    resp.json()
-                        .then(json => {
-                            const groupURL = json.groupDetails.replace('/api/covida', '/covida')
-                            const groupId = json.groupId
-
-                            addGroupToTable(groupId, groupURL, name, description)
-                            alertMsg(`Group "${name}" successfully added.`, 'success')
-                            descriptionElement.value = ''
-                            descriptionElement.blur()
-                            nameElement.value = ''
-                            nameElement.focus()
-                        })
+    
+        fetch(loc.replace('/groups', '/user-info'))
+            .then(resp => resp.json())
+            .then(user => {
+                if (user.status) {
+                    document.location.reload()
+                    return null
                 }
+
+                const path =  loc.replace('/covida', '/api/covida')
+                fetch(path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}&username=${encodeURIComponent(user.username)}`
+                })
+                    .then(resp => {
+                        if (resp.status != 201) alert(resp.statusText)
+                        else {
+                            resp.json()
+                                .then(json => {
+                                    const groupURL = json.groupDetails.replace('/api/covida', '/covida')
+                                    const groupId = json.groupId
+                                    
+                                    
+                                    addGroupToTable(groupId, groupURL, name, description)
+                                    alertMsg(`Group "${name}" successfully added.`, 'success')
+                                    descriptionElement.value = ''
+                                    descriptionElement.blur()
+                                    nameElement.value = ''
+                                    nameElement.focus()
+                                })
+                        }
+                    })
             })
             .catch(err => alertMsg(err))
     }
@@ -142,39 +207,25 @@ function handlerAddGroup(nameElement, descriptionElement) {
 
 /**
  * 
- * @param {Element} nameElement
+ * @param {Element} select
  */
-function handlerAddGame(nameElement) {
-    if (nameElement.reportValidity()) {
-        // Replace HTML tags
-        const name = nameElement.value
-
-        const loc = document.location.href
-        const path =  `${loc.replace('/covida', '/api/covida')}/games`
+function handlerAddGame(select) {
+    const id = select.value
+    if (id) {
+        const loc = document.location.href.split('?')[0]
+        const path =  `${loc.replace('/covida/games/search', '/api/covida/groups')}/${id}/games`
         fetch(path, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `name=${encodeURIComponent(name)}`
+            body: `id=${select.dataset.covidaGameId}`
         })
             .then(resp => {
-                if (resp.status == 404) {
-                    alertMsg(`Could not find a game matching "${name}"!`)
-                } else if (resp.status != 201) alert(resp.statusText)
+                if (resp.status != 201) alert(resp.statusText)
                 else {
                     resp.json()
                         .then(json => {
-                            const gameURL = json.gameDetails.replace('/api/covida', '/covida')
                             const gameName = json.matchName
-                            const gameId = json.matchId
-
-                            // Check if game is already in the list
-                            if (!document.querySelector(`[data-covida-game-id='${gameId}']`)) {
-                                addGameToGroupTable(gameId, gameURL, gameName)
-                                alertMsg(`Game "${gameName}" (closest match to "${sanitizeInput(name)}") successfully added.`, 'success')
-                                nameElement.value = ''
-                            } else {
-                                alertMsg(`Game "${gameName}" (closest match to "${sanitizeInput(name)}") already exists in group.`)
-                            }
+                            alertMsg(`Game "${gameName}" successfully added.`, 'success')
                         })
                 }
             })
@@ -205,32 +256,6 @@ function addGroupToTable(groupId, groupURL, name, description) {
             if (id == groupId) {
                 const groupName = item.querySelector('.groupName').textContent
                 item.querySelector('button').addEventListener('click', () => handlerRemoveGroup(item, groupName, id))
-            }
-        })
-}
-
-function addGameToGroupTable(gameId, gameURL, gameName) {
-    document
-        .querySelector('.emptyMessage')
-        .innerHTML = ''
-
-    document
-        .querySelector('table')
-        .insertAdjacentHTML('beforeend',  
-            `<tr class="gameItem" data-covida-game-id=${gameId}>
-                <td class="gameName"><b>${gameName}</b></td>
-                <td><a href='${gameURL}' class="btn btn-primary btn-block">See game details</a></td>
-                <td><button class="btn btn-danger btn-block">Delete Game</button></td>
-            </tr>`
-        )
-
-    document
-        .querySelectorAll('.gameItem')
-        .forEach(item => {
-            const id = item.dataset.covidaGameId
-            if (id == gameId) {
-                const gameName = item.querySelector('.gameName').textContent
-                item.querySelector('button').addEventListener('click', () => handlerRemoveGame(item, gameName, id))
             }
         })
 }

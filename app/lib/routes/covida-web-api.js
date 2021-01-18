@@ -1,7 +1,8 @@
 'use strict'
 
 const router = require('express').Router()
-const service = require('./../repo/covida-services')
+const service = require('../repo/covida-services')
+const users = require('../repo/covida-users')
 
 module.exports = router
 
@@ -149,15 +150,17 @@ function handlerHomepage(req, resp, next) {
 function handlerAddGameToGroup(req, resp, next) {
     const groupId = req.params.group
     const gameName = req.body.name
-    if (!gameName) {
+    const gameId = req.body.id
+
+    if (!gameName && !gameId) {
         const err = {
             status: 400,
-            message: 'No game specified'
+            message: 'No game or ID specified'
         }
         return next(err)
     }
     
-    service.addGameToGroup(groupId, gameName)
+    service.addGameToGroup(groupId, gameName, gameId)
         .then(groupGame => {
             const game = groupGame.game
             const group = groupGame.group
@@ -228,6 +231,7 @@ function handlerEditGroup(req, resp, next) {
 function handlerAddGroup(req, resp, next) {
     const name = req.body.name
     const description = req.body.description
+    const username = req.body.username
     if (!name) {
         const err = {
             status: 400,
@@ -237,6 +241,12 @@ function handlerAddGroup(req, resp, next) {
     }
 
     service.addGroup(name, description)
+        .then(group => {
+            if (username) {
+                return users.addGroup(decodeURIComponent(username), group.id, group.name).then(user => group)
+            }
+            return group
+        })
         .then(group => {
             const host = req.headers.host
             resp.status(201)
@@ -280,6 +290,13 @@ function handlerDeleteGame(req, resp, next) {
 
 function handlerDeleteGroup(req, resp, next) {
     service.deleteGroup(req.params.group)
+        .then(group => {
+            const username = req.body.username
+            if (username) {
+                return users.removeGroup(decodeURIComponent(username), group.id).then(user => group)
+            }
+            return group
+        })
         .then(group => {
             if (!group) {
                 const err = {

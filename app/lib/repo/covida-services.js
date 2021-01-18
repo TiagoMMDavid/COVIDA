@@ -107,19 +107,34 @@ function deleteGroup(id) {
  * @param {String} gameName
  * @returns {Promise<Group>} Promise of the group to which the game was added
  */
-function addGameToGroup(groupId, gameName) {
+function addGameToGroup(groupId, gameName, gameId) {
     const groupGame = { 
         'group': null,
         'game': null
     }
+    let promise
+    if (gameId) {
+        promise = getGameById(gameId)
+            .then(game => {
+                if (!game) return groupGame
+                groupGame.game = game
+                return game
+            })
+    } else {
+        promise = igdb.searchGames(gameName, 1)
+            .then(games => {
+                if (games.length == 0) return groupGame
+                const game = games[0]
 
-    return igdb.searchGames(gameName, 1)
-        .then(games => {
-            if (games.length == 0) return groupGame
-            const game = games[0]
+                groupGame.game = game
+                return game
+            })
+    }
 
-            groupGame.game = game
-            return db.addGame(groupId, game.id, game.name)
+    return promise
+        .then(game => {
+            if (groupGame.game) return db.addGame(groupId, game.id, game.name)
+            return groupGame
         })
         .then(group => {
             if (groupGame.game)
