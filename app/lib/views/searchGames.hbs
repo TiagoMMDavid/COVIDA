@@ -1,4 +1,6 @@
 <div>
+    <h2 style="text-align: center;">Search Games</h2>
+    <br>
     <div>
         {{#if messages.error}}
             <div class="alert alert-warning alert-dismissible" role="alert">
@@ -9,7 +11,6 @@
             </div>
         {{/if}}
     </div>
-    <h2 style="text-align: center;">Search Games</h2>
     <form method="GET" autocomplete="off">
         <div class="form-group">
             <label>Game Name</label>
@@ -19,7 +20,7 @@
             <label>Maximum Amount of Games</label>
             <input class="form-control" type="number" name="limit" value="{{limit}}" placeholder="Max games" min="1" max="500" required/>
         </div>
-        <input type="submit" value="Search" class="btn btn-primary mb-2"/>
+        <input type="submit" value="Search" class="btn btn-primary mb-2 btn-block"/>
     </form>
     <hr>
     {{#each games}}

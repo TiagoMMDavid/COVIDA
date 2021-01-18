@@ -48,7 +48,8 @@ function init(groupsIndex, done) {
         resp.status(err.status || 500)
         resp.render('error', {
             'status': err.status,
-            'message': err.message
+            'message': err.message,
+            'user': req.user
         })
     })
 
@@ -56,7 +57,8 @@ function init(groupsIndex, done) {
         resp.status(404)
         resp.render('error', {
             'status': 404,
-            'message': 'Sorry, that page does not exist!'
+            'message': 'Sorry, that page does not exist!',
+            'user': req.user
         })
     })
 
