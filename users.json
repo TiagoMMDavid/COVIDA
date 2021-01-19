@@ -1,0 +1,4 @@
+{ "index" : { "_id" : "user1" } }
+{"username":"user1","password":"f54a0dcf778a710d43e28418baee598c55eec238aa7953d86bd3965baf28abff","groups":[{"id":"1","name":"Favorite"},{"id":"2","name":"eSports"}]}
+{ "index" : { "_id" : "user2" } }
+{"username":"user2","password":"04bf1e738ed166114d2d5efcd88e3a32ea700f68d1157dd9abc5604ff98b1b82","groups":[{"id":"3","name":"Survival"}]}

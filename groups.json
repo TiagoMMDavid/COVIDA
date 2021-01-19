@@ -1,0 +1,6 @@
+{ "index" : { "_id" : "1" } }
+{"name":"Favorite","description":"Group for my favorite games","games":[{"id":17269,"name":"Roblox"},{"id":1905,"name":"Fortnite"}]}
+{ "index" : { "_id" : "2" } }
+{"name":"eSports","description":"Group for eSports games","games":[{"id":1372,"name":"Counter-Strike: Global Offensive"},{"id":126459,"name":"Valorant"}]}
+{ "index" : { "_id" : "3" } }
+{"name":"Survival","description":"Group for survival games","games":[{"id":2117,"name":"DayZ"},{"id":3277,"name":"Rust"}]}
