@@ -44,7 +44,7 @@ function addUser(username, password) {
                 body: JSON.stringify(toAdd)
             }
         
-            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+            return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}?refresh`, options)
                 .then(res => toAdd)
         })
 }
@@ -63,7 +63,7 @@ function deleteUser(username) {
         }
     }
 
-    return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+    return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}?refresh`, options)
         .then(res => res.json())
         .then(json => {
             if (json.result == 'deleted') return username
@@ -77,7 +77,7 @@ function deleteUser(username) {
  * @returns {Promise<User>} Promise of a user
  */
 function getUser(username) {
-    return fetch(`${URL_USERS}${username.toLowerCase()}`)
+    return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}`)
         .then(res => res.json())
         .then(user => {
             if (!user.found) return null
@@ -119,7 +119,7 @@ function addGroup(username, groupId, groupName) {
                 body: JSON.stringify(user)
             }
 
-            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+            return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}?refresh`, options)
                 .then(res => user)
         })
 }
@@ -150,7 +150,7 @@ function editGroup(username, groupId, groupName) {
                 body: JSON.stringify(user)
             }
 
-            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+            return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}?refresh`, options)
                 .then(res => user)
         })
 }
@@ -177,7 +177,7 @@ function removeGroup(username, groupId) {
                 body: JSON.stringify(user)
             }
 
-            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+            return fetch(`${URL_USERS}${encodeURIComponent(username.toLowerCase())}?refresh`, options)
                 .then(res => user)
         })
 }

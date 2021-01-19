@@ -37,6 +37,7 @@ function handlerLoginPost(req, resp, next) {
                 if (user.password == password) {
                     req.logIn(user, (err) => {
                         if(err) return next(err)
+                        req.flash('userInfo', 'Welcome!')
                         resp.redirect('/covida')
                     })
                 } else {
@@ -81,14 +82,14 @@ function handlerLogout(req, resp, next) {
 
 function handlerDeleteAccount(req, resp, next) {
     const user = req.user
-    if (req.query.confirm && user) {
+    if (req.query.confirm == 'true' && user) {
         req.logout()
-        return users.deleteUser(decodeURIComponent(user.username))
+        return users.deleteUser(user.username)
             .then((username) => {
                 if (username) {
-                    req.flash('userDeleted', 'User deleted successfully')
+                    req.flash('userInfo', 'User deleted successfully')
                 } else {
-                    req.flash('userDeletedError', 'Failed to delete user')
+                    req.flash('userError', 'Failed to delete user')
                 }
                 resp.redirect('/covida')
             })
@@ -96,11 +97,11 @@ function handlerDeleteAccount(req, resp, next) {
     resp.redirect('/covida')
 }
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) =>  {
     done(null, user.username)
 })
   
-passport.deserializeUser(function(username, done) {
+passport.deserializeUser((username, done) => {
     users.getUser(username)
         .then(user => done(null, user))
 })

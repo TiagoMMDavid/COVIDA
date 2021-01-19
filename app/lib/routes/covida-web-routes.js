@@ -37,8 +37,8 @@ function handlerHomepage(req, resp, next) {
             }
         ],
         'messages': {
-            'error': req.flash('userDeletedError'),
-            'success': req.flash('userDeleted')
+            'error': req.flash('userError'),
+            'success': req.flash('userInfo')
         },
         'user': req.user
     })
@@ -182,32 +182,34 @@ function handlerGroupById(req, resp, next) {
             }
         })
         .then(groupGames => {
-            if (!groupGames.games) {
-                req.flash('limitError', 'Invalid limit specified. Maximum must be less than minimum.')
-                return resp.redirect(`/covida/groups/${group.id}`)
-            }
+            if(groupGames) {
+                if (!groupGames.games) {
+                    req.flash('limitError', 'Invalid limit specified. Maximum must be less than minimum.')
+                    return resp.redirect(`/covida/groups/${group.id}`)
+                }
             
-            const host = req.headers.host
+                const host = req.headers.host
 
-            const group = groupGames.group
-            group.games = groupGames.games.map(game => {
-                game.gameDetails = `http://${host}/covida/games/${game.id}`
+                const group = groupGames.group
+                group.games = groupGames.games.map(game => {
+                    game.gameDetails = `http://${host}/covida/games/${game.id}`
 
-                if (game.total_rating) 
-                    game.total_rating = game.total_rating.toFixed(2)
-                return game
-            })
+                    if (game.total_rating) 
+                        game.total_rating = game.total_rating.toFixed(2)
+                    return game
+                })
 
-            resp.render('groupDetails', {
-                'group': group,
-                'isEmpty': group.games.length == 0,
-                'min': min,
-                'max': max,
-                'messages': {
-                    'error': req.flash('limitError')
-                },
-                'user': req.user
-            })
+                resp.render('groupDetails', {
+                    'group': group,
+                    'isEmpty': group.games.length == 0,
+                    'min': min,
+                    'max': max,
+                    'messages': {
+                        'error': req.flash('limitError')
+                    },
+                    'user': req.user
+                })
+            }
         })
         .catch(err => next(INTERNAL_ERROR))
 }
