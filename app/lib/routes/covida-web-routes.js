@@ -94,7 +94,7 @@ function handlerGameById(req, resp, next) {
             if (game.total_rating) {
                 game.total_rating = game.total_rating.toFixed(2)
             }
-            resp.render('game', {
+            resp.render('gameDetails', {
                 'game': game,
                 'user': req.user
             })
