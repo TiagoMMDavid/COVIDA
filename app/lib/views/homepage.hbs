@@ -1,6 +1,10 @@
 <h1 style="text-align: center;">COVIDA (Chelas Open VIDeogame Application)</h1>
 <p style="text-align: center;">Project by Group 10</p>
 <hr>
+<div class="row">
 {{#each links}}
-    <a href={{link}}>{{name}}</a><br>
+    <div class="col-sm">
+        <a class="btn btn-outline-primary btn-block" href={{link}}>{{name}}</a>
+        <br>
+    </div>
 {{/each}}

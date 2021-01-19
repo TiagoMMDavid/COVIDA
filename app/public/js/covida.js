@@ -5,8 +5,7 @@ function setup() {
     document
         .querySelectorAll('.signupPass')
         .forEach(item => {
-            const event = item.id == 'pass' ? 'change' : 'keyup'
-            item.addEventListener(event, handlerValidatePassword)
+            item.addEventListener('keyup', handlerValidatePassword)
         })
 
     // Remove group from table
@@ -19,7 +18,7 @@ function setup() {
         })
 
     // Add group to table
-    const groupForm = document.querySelector('.groupForm')
+    const groupForm = document.querySelector('#addGroupForm')
     if (groupForm) {
         const name = groupForm.querySelector('#name')
         const description = groupForm.querySelector('#description')
@@ -35,7 +34,7 @@ function setup() {
         const groupName = editGroupForm.querySelector('#editGroupName')
         const groupDescription = editGroupForm.querySelector('#editGroupDescription')
         const button = editGroupForm.querySelector('button')
-        button.addEventListener('click', () => handlerEditGroup(groupName, groupDescription))
+        button.addEventListener('click', () => handlerEditGroup(groupName, groupDescription, button.dataset.covidaUsername))
         groupDescription.addEventListener('keyup', (event) => mapEnterToButton(event, button))
         groupName.addEventListener('keyup', (event) => mapEnterToButton(event, button))
     }
@@ -56,33 +55,52 @@ function setup() {
             const select = item.querySelector('select')
             button.addEventListener('click', () => handlerAddGame(select))
         })
+    
+    const deleteAccountButton = document.querySelector('#deleteAccount')
+    if (deleteAccountButton) {
+        deleteAccountButton.addEventListener('click', () => handlerDeleteAccountShow())
+        document.querySelector('#noDeleteAccount').addEventListener('click', () => handlerDeleteAccountClose())
+        document.querySelector('#yesDeleteAccount').addEventListener('click', () => handlerDeleteAccount())
+    }
 }
 
 function handlerValidatePassword() {
-    var password = document.getElementById('pass')
-    var confirm_password = document.getElementById('confirm-pass')
+    const password = document.getElementById('pass')
+    const confirm_password = document.getElementById('confirm-pass')
+    const button = document.getElementById('button')
 
-    if (password.value != confirm_password.value) {
-        confirm_password.setCustomValidity('Passwords don\'t match!')
+    if (password.value != confirm_password.value || confirm_password.value.length == 0) {
+        button.setAttribute('disabled', '')
+        confirm_password.classList.remove('is-valid')
+        confirm_password.classList.add('is-invalid')
     } else {
-        confirm_password.setCustomValidity('')
+        button.removeAttribute('disabled', '')
+        confirm_password.classList.remove('is-invalid')
+        confirm_password.classList.add('is-valid')
     }
 }
 
-function handlerEditGroup(groupName, groupDescription) {
+function handlerEditGroup(groupName, groupDescription, username) {
     if (groupDescription.value.length == 0 && groupName.value.length == 0) {
-        return alertMsg('You need to change at least one field')
+        return alertMsg('You need to change at least one field.')
     }
-    startLoadingMsg()
     const name = sanitizeInput(groupName.value)
     const description = sanitizeInput(groupDescription.value)
+    
+    if (name.length > 64) {
+        return alertMsg('Name too long.')
+    }
+    if (description.length > 256) {
+        return alertMsg('Description too long.')
+    }
 
+    startLoadingMsg()
     const loc = document.location.href
     const path = loc.replace('/covida', '/api/covida')
     fetch(path, { 
         method: 'PUT',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}`
+        body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}&username=${encodeURIComponent(username)}`
     })
         .then(resp => {
             finishLoadingMsg()
@@ -92,10 +110,14 @@ function handlerEditGroup(groupName, groupDescription) {
                 alertMsg('Group successfully edited.', 'success')
                 groupName.value = ''
                 groupDescription.value = ''
-                if (name)
+                if (name) {
                     document.querySelector('#groupName').innerHTML = name
-                if (description)
-                    document.querySelector('#groupDescription').textContent = description
+                    groupName.placeholder.innerHTML = name
+                }
+                if (description) {
+                    document.querySelector('#groupDescription').innerHTML = description
+                    groupDescription.placeholder.innerHTML = description
+                }
             } 
 
         })
@@ -120,10 +142,10 @@ function handlerRemoveGroup(item, groupName, groupId, username) {
                 item.remove()
 
                 // Check if table is empty
-                if (document.querySelectorAll('tr').length == 0) {
+                if (document.querySelectorAll('td').length == 0) {
                     document
                         .querySelector('.emptyMessage')
-                        .innerHTML = '<hr>\n<h5 style="text-align: center;">You don\'t have any groups</h5>'
+                        .innerHTML = '<h5 style="text-align: center;">You don\'t have any groups</h5>'
                 }
 
             }
@@ -144,10 +166,10 @@ function handlerRemoveGame(item, gameName, gameId) {
                 item.remove()
 
                 // Check if table is empty
-                if (document.querySelectorAll('tr').length == 0) {
+                if (document.querySelectorAll('td').length == 0) {
                     document
                         .querySelector('.emptyMessage')
-                        .innerHTML = '<hr>\n<h5 style="text-align: center;">This group has no games</h5>'
+                        .innerHTML = '<h5 style="text-align: center;">This group has no games</h5>'
                 }
 
             }
@@ -162,13 +184,20 @@ function handlerRemoveGame(item, gameName, gameId) {
  */
 function handlerAddGroup(nameElement, descriptionElement, username) {
     if (nameElement.reportValidity()) {
-        startLoadingMsg()
         const loc = document.location.href
 
         // Replace HTML tags
         const name = sanitizeInput(nameElement.value)
         const description = sanitizeInput(descriptionElement.value)
 
+        if (name.length > 64) {
+            return alertMsg('Name too long.')
+        }
+        if (description.length > 256) {
+            return alertMsg('Description too long.')
+        }
+
+        startLoadingMsg()
         const path =  loc.replace('/covida', '/api/covida')
         fetch(path, {
             method: 'POST',
@@ -190,7 +219,6 @@ function handlerAddGroup(nameElement, descriptionElement, username) {
                             descriptionElement.value = ''
                             descriptionElement.blur()
                             nameElement.value = ''
-                            nameElement.focus()
                         })
                 }
             })
@@ -230,6 +258,27 @@ function handlerAddGame(select) {
     }
 }
 
+function handlerDeleteAccountShow() {
+    const overlay = document.querySelector('#deleteOverlay')
+    overlay.classList.remove('slideOut')
+    overlay.classList.add('slideIn')
+    overlay.style.display = 'flex'
+}
+
+function handlerDeleteAccount() {
+    handlerDeleteAccountClose()
+    startLoadingMsg()
+    const loc = document.location.href
+    window.location.href = loc.replace(/\/covida.*/, '/covida/account/delete?confirm=true')
+}
+
+function handlerDeleteAccountClose() {
+    const overlay = document.querySelector('#deleteOverlay')
+    overlay.classList.remove('slideIn')
+    overlay.classList.add('slideOut')
+    setTimeout(() => overlay.style.display = 'none', 200)
+}
+
 function addGroupToTable(groupId, groupURL, name, description, username) {
     document
         .querySelector('.emptyMessage')
@@ -239,9 +288,9 @@ function addGroupToTable(groupId, groupURL, name, description, username) {
         .querySelector('table')
         .insertAdjacentHTML('beforeend',  
             `<tr class="groupItem" data-covida-group-id="${groupId}">
-                <td class="groupName"><b>${name}</b></td>
-                <td><i>${description || 'No description available'}</i></td>
-                <td><a href="${groupURL}" class="btn btn-primary btn-block">See group details</a></td>
+                <td class="groupName" style="vertical-align: middle;"><b>${name}</b></td>
+                <td style="vertical-align: middle;"><i>${description || 'No description available'}</i></td>
+                <td><a href="${groupURL}" class="btn btn-outline-primary btn-block">See group details</a></td>
                 <td><button class="btn btn-danger btn-block" data-covida-username="${username}">Delete Group</button></td>
             </tr>`
         )
@@ -271,14 +320,14 @@ function alertMsg(message, kind) {
 }
 
 function startLoadingMsg() {
-    const overlay = document.querySelector('#overlay')
+    const overlay = document.querySelector('#loadingOverlay')
     overlay.classList.remove('slideOut')
     overlay.classList.add('slideIn')
     overlay.style.display = 'flex'
 }
 
 function finishLoadingMsg() {
-    const overlay = document.querySelector('#overlay')
+    const overlay = document.querySelector('#loadingOverlay')
     overlay.classList.remove('slideIn')
     overlay.classList.add('slideOut')
     setTimeout(() => overlay.style.display = 'none', 200)

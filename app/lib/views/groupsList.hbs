@@ -2,38 +2,50 @@
     <div id="groupName" style="display: inline-block;">
         Your Groups
     </div>
-    <button class="btn btn-outline-secondary btn-sm" type="button" data-toggle="collapse" data-target="#addGroupForm" aria-expanded="false" aria-controls="addGroupForm">
-        <i class="fas fa-plus"></i>
-    </button>
 </h3>
-<div class="groupForm collapse" id="addGroupForm">
-    <br>
-    <div class="row">
-        <div class="col">
-            <input type="text" id="name" class="form-control mb-2" placeholder="Name" autocomplete="off" required>
-        </div>
-        <div class="col">
-            <input type="text" id="description" class="form-control mb-2" autocomplete="off" placeholder="Description"/>
-        </div>
-        <div class="col-3">
-            <button class="btn btn-primary btn-block mb-2" data-covida-username="{{user.username}}">Add Group</button>
-        </div>
-    </div>
-</div>
 <br>
-<table class="table">
-{{#each groups}}
-    <tr class="groupItem" data-covida-group-id={{id}}>
-        <td class="groupName"><b>{{{name}}}</b></td>
-        <td><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
-        <td><a href='{{groupDetails}}' class="btn btn-primary btn-block">See group details</a></td>
-        <td><button class="btn btn-danger btn-block" data-covida-username="{{../user.username}}">Delete Group</button></td>
-    </tr>
-{{/each}}
-</table>
+<div class="table-responsive-xl">
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col" style="vertical-align: middle;">Name</td>
+                <th scope="col" style="vertical-align: middle;">Description</td>
+                <th scope="col" colspan="3">
+                    <button class="btn btn-outline-secondary btn-block" type="button" data-toggle="collapse" data-target="#addGroupForm" aria-expanded="false" aria-controls="addGroupForm">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </th>
+            </tr>
+            <tr>
+                <th scope="col" colspan="4">
+                    <div class="groupForm collapse" id="addGroupForm">
+                        <div class="row">
+                            <div class="col-sm">
+                                <input type="text" id="name" class="form-control mb-2" placeholder="Name" maxlength="64" autocomplete="off" required>
+                            </div>
+                            <div class="col-sm">
+                                <input type="text" id="description" class="form-control mb-2" autocomplete="off" maxlength="256" placeholder="Description"/>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-block mb-2" data-covida-username="{{user.username}}">Add Group</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        {{#each groups}}
+            <tr class="groupItem" data-covida-group-id={{id}}>
+                <td class="groupName" style="vertical-align: middle;"><b>{{{name}}}</b></td>
+                <td style="vertical-align: middle;"><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
+                <td><a href='{{groupDetails}}' class="btn btn-outline-primary btn-block">See group details</a></td>
+                <td><button class="btn btn-danger btn-block" data-covida-username="{{../user.username}}">Delete Group</button></td>
+            </tr>
+        {{/each}}
+    </table>
+</div>
 <div class="emptyMessage">
     {{#if isEmpty}}
-        <hr>
         <h5 style="text-align: center;">You don't have any groups</h5>
     {{/if}}
 </div>

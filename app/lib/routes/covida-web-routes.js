@@ -36,6 +36,10 @@ function handlerHomepage(req, resp, next) {
                 'link': `http://${host}/covida/games/search`
             }
         ],
+        'messages': {
+            'error': req.flash('userDeletedError'),
+            'success': req.flash('userDeleted')
+        },
         'user': req.user
     })
 }

@@ -14,21 +14,21 @@
 <hr>
 {{#each games}}
     <div class="row mb-2">
-        <div class="col-7">
+        <div class="col-sm-7">
             <h3 style="display: inline;">{{name}}</h3>
         </div>
         {{#if ../user}}
-            <div class="col">
+            <div class="col-sm">
                 <div class="groupSelectForm row">
-                    <div class="col">
+                    <div class="col-sm">
                         <select class="custom-select" id="groupSelect" data-covida-game-id="{{id}}" autocomplete="off">
-                            <option selected>Choose...</option>
+                            <option selected value="">Choose...</option>
                             {{#each ../user.groups}}
                                 <option value="{{id}}">{{{name}}}</option>
                             {{/each}}
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col-sm">
                         <button class="btn btn-primary btn-block">Add to Group</button>
                     </div> 
                 </div>

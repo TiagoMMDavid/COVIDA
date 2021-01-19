@@ -6,22 +6,24 @@
         <div class="col-form-label">
             <label>Number of games</label>
         </div>
-        <div class="col">
+        <div class="col-sm">
             <input type="number" class="form-control mb-2" name="limit" value="{{limit}}" placeholder="Maximum amount of games" min="1" max="500" required/>
         </div>
-        <input type="submit" value="Search" class="btn btn-primary mb-2"/>
+        <div class="col-sm-3">
+            <input type="submit" value="Submit" class="btn btn-primary btn-block mb-2"/>
+        </div>
     </div>
 </form>
 <hr>
 {{#each games}}
     <div class="row mb-2">
-        <div class="col-7">
+        <div class="col-sm-7">
             <h3 style="display: inline;">{{name}}</h3>
         </div>
         {{#if ../user}}
-            <div class="col">
+            <div class="col-sm">
                 <div class="groupSelectForm row">
-                    <div class="col">
+                    <div class="col-sm">
                         <select class="custom-select" id="groupSelect" data-covida-game-id="{{id}}" autocomplete="off">
                             <option selected value="">Choose...</option>
                             {{#each ../user.groups}}
@@ -29,7 +31,7 @@
                             {{/each}}
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col-sm">
                         <button class="btn btn-primary btn-block">Add to Group</button>
                     </div> 
                 </div>

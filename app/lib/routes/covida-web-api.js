@@ -199,6 +199,7 @@ function handlerEditGroup(req, resp, next) {
     const groupId = req.params.group
     const newName = req.body.name
     const newDescription = req.body.description
+    const username = req.body.username
 
     if (!newName && !newDescription) {
         const err = {
@@ -215,15 +216,23 @@ function handlerEditGroup(req, resp, next) {
                     status: 404,
                     message: 'Group does not exist'
                 }
-                return next(err)
+                next(err)
+                return null
             }
-
-            const host = req.headers.host
-            resp.json({
-                status: 200,
-                message: `Group '${groupId}' edited successfully`,
-                groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`)
-            })
+            if (username) {
+                return users.editGroup(decodeURIComponent(username), group.id, group.name).then(user => group)
+            }
+            return group
+        })
+        .then(group => {
+            if (group) {
+                const host = req.headers.host
+                resp.json({
+                    status: 200,
+                    message: `Group '${groupId}' edited successfully`,
+                    groupDetails: encodeURI(`http://${host}/api/covida/groups/${group.id}`)
+                })
+            }
         })
         .catch(err => next(INTERNAL_ERROR))
 }

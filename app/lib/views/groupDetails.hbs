@@ -10,24 +10,18 @@
 <div class="collapse" id="editGroupForm">
     <br>
     <div class="row">
-        <div class="col">
-            <input type="text" class="form-control mb-2" placeholder="{{{group.name}}}" autocomplete="off" id="editGroupName">
+        <div class="col-sm">
+            <input type="text" class="form-control mb-2" placeholder="{{{group.name}}}" maxlength="64" autocomplete="off" id="editGroupName">
         </div>
-        <div class="col">
-            <input type="text" class="form-control mb-2" autocomplete="off" id="editGroupDescription" placeholder=
+        <div class="col-sm">
+            <input type="text" class="form-control mb-2" autocomplete="off" id="editGroupDescription" maxlength="256" placeholder=
                 "{{#if group.description}}{{{group.description}}}
                 {{else}}New Description
                 {{/if}}">
         </div>
-        <div class="col-3">
-            <button class="btn btn-primary btn-block mb-2">Submit</button>
+        <div class="col-sm">
+            <button class="btn btn-primary btn-block mb-2" data-covida-username="{{user.username}}">Submit</button>
         </div>
-    </div>
-</div>
-<br>
-<div class="row">
-    <div class="col">
-        <a class="btn btn-primary mb-2 btn-block" href="/covida/games/search">Add a game</a>
     </div>
 </div>
 <br>
@@ -36,34 +30,39 @@
         <div class="col-form-label">
             <label>Limit by rating</label>
         </div>
-        <div class="col">
+        <div class="col-sm">
             <input type="number" class="form-control mb-2" name="min" value="{{min}}" placeholder="Minimum Rating" min="0" max="100"/>
         </div>
-        <div class="col">
+        <div class="col-sm">
             <input type="number" class="form-control mb-2" name="max" value="{{max}}" placeholder="Maximum Rating" min="0" max="100"/>
         </div>
-        <input type="submit" class="btn btn-primary mb-2" value="Submit"/>
+        <div class="col-sm">
+            <input type="submit" class="btn btn-primary btn-block mb-2" value="Submit"/>
+        </div>
     </div>
 </form>
-{{#unless isEmpty}}
-<table class="table">
-    <tr>
-        <td >Name</td>
-        <td colspan="3">Rating</td>
-    </tr>
+<div class="table-responsive-xl">
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col" style="vertical-align: middle;">Name</td>
+                <th scope="col" style="vertical-align: middle;">Rating</td>
+                <th scope="col" colspan="2"><a class="btn btn-outline-secondary btn-block" type="button" href="/covida/games/search"><i class="fas fa-plus"></i></a></td>
+            </tr>
+        </thead>
     {{#each group.games}}
         <tr class="gameItem" data-covida-game-id={{id}}>
-            <td class="gameName"><b>{{name}}</b></td>
-            <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
-            <td><a href='{{gameDetails}}' class="btn btn-primary btn-block">See game details</a></td>
+            <td class="gameName" style="vertical-align: middle;"><b>{{name}}</b></td>
+            <td style="vertical-align: middle;">{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
+            <td><a href='{{gameDetails}}' class="btn btn-outline-primary btn-block">See game details</a></td>
             <td><button class="btn btn-danger btn-block">Delete Game</button></td>
         </tr>
     {{/each}}
     </table>
-{{/unless}}
+</div>
+
 <div class="emptyMessage">
     {{#if isEmpty}}
-        <hr>
         <h5 style="text-align: center;">No games found</h5>
     {{/if}}
 </div>

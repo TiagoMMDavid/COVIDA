@@ -15,6 +15,7 @@ router.post('/covida/login', handlerLoginPost)
 router.get('/covida/signup', handlerSignup)
 router.post('/covida/signup', handlerSignupPost)
 router.get('/covida/logout', handlerLogout)
+router.get('/covida/account/delete', handlerDeleteAccount)
 
 function handlerLogin(req, resp, next) {
     resp.render('login', {
@@ -27,7 +28,7 @@ function handlerLogin(req, resp, next) {
 }
 
 function handlerLoginPost(req, resp, next) {
-    const username = req.body.username.toLowerCase()
+    const username = req.body.username
     users.getUser(username)
         .then(user => {
             if (user) {
@@ -75,6 +76,23 @@ function handlerSignupPost(req, resp, next) {
 
 function handlerLogout(req, resp, next) {
     req.logout()
+    resp.redirect('/covida')
+}
+
+function handlerDeleteAccount(req, resp, next) {
+    const user = req.user
+    if (req.query.confirm && user) {
+        req.logout()
+        return users.deleteUser(decodeURIComponent(user.username))
+            .then((username) => {
+                if (username) {
+                    req.flash('userDeleted', 'User deleted successfully')
+                } else {
+                    req.flash('userDeletedError', 'Failed to delete user')
+                }
+                resp.redirect('/covida')
+            })
+    }
     resp.redirect('/covida')
 }
 

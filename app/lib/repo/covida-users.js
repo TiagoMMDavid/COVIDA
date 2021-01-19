@@ -7,7 +7,7 @@ const es = {
     usersIndex: 'covida-users'
 }
 
-// Variables only changed in init
+// Variable changed in init
 let URL_USERS = `http://${es.host}:${es.port}/${es.usersIndex}/_doc/`
 
 /**
@@ -17,8 +17,12 @@ let URL_USERS = `http://${es.host}:${es.port}/${es.usersIndex}/_doc/`
  * @property {Array<Group>} groups
  */
 
+
 /**
- * @returns {Promise<User>}
+ * Adds a user with given username and password
+ * @param {String} username 
+ * @param {String} password 
+ * @returns {Promise<User>} Promise of a user
  */
 function addUser(username, password) {
     return getUser(username)
@@ -40,16 +44,40 @@ function addUser(username, password) {
                 body: JSON.stringify(toAdd)
             }
         
-            return fetch(`${URL_USERS}${username}?refresh`, options)
+            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
                 .then(res => toAdd)
-        })    
+        })
 }
 
 /**
- * @returns {Promise<User>}
+ * Deletes a user with the given username
+ * @param {String} username 
+ * @returns {Promise<String>} Promise of a username. Used to confirm deletion
+ */
+function deleteUser(username) {
+    const options = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    }
+
+    return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+        .then(res => res.json())
+        .then(json => {
+            if (json.result == 'deleted') return username
+            return null
+        })
+}
+
+/**
+ * Gets the user with the given username
+ * @param {String} username 
+ * @returns {Promise<User>} Promise of a user
  */
 function getUser(username) {
-    return fetch(`${URL_USERS}${username}`)
+    return fetch(`${URL_USERS}${username.toLowerCase()}`)
         .then(res => res.json())
         .then(user => {
             if (!user.found) return null
@@ -64,7 +92,11 @@ function getUser(username) {
 }
 
 /**
- * @returns {Promise<User>}
+ * Adds a group to the array of groups of the user with given username
+ * @param {String} username
+ * @param {String} groupId
+ * @param {String} groupName 
+ * @returns {Promise<User>} Promise of a user
  */
 function addGroup(username, groupId, groupName) {
     return getUser(username)
@@ -87,11 +119,48 @@ function addGroup(username, groupId, groupName) {
                 body: JSON.stringify(user)
             }
 
-            return fetch(`${URL_USERS}${username}?refresh`, options)
+            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
                 .then(res => user)
         })
 }
 
+/**
+ * Edits a group from the array of groups of the user with given username
+ * @param {String} username
+ * @param {String} groupId
+ * @param {String} groupName 
+ * @returns {Promise<User>} Promise of a user
+ */
+function editGroup(username, groupId, groupName) {
+    return getUser(username)
+        .then(user => {
+            if (!user) return null
+
+            const filteredGroups = user.groups.filter(group => group.id == groupId)
+            if (filteredGroups.length == 0) return null
+
+            filteredGroups[0].name = groupName
+
+            const options = {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(user)
+            }
+
+            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
+                .then(res => user)
+        })
+}
+
+/**
+ * Removes a group from the array of groups of the user with given username
+ * @param {String} username
+ * @param {String} groupId
+ * @returns {Promise<User>} Promise of a user
+ */
 function removeGroup(username, groupId) {
     return getUser(username)
         .then(user => {
@@ -108,7 +177,7 @@ function removeGroup(username, groupId) {
                 body: JSON.stringify(user)
             }
 
-            return fetch(`${URL_USERS}${username}?refresh`, options)
+            return fetch(`${URL_USERS}${username.toLowerCase()}?refresh`, options)
                 .then(res => user)
         })
 }
@@ -128,7 +197,9 @@ const API = {
     init,
     getUser,
     addUser,
+    deleteUser,
     addGroup,
+    editGroup,
     removeGroup
 }
 

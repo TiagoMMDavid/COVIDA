@@ -47,6 +47,7 @@
                     <div>
                         <a class="dropdown-item" href="/covida/groups">List Groups</a>
                         <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" id="deleteAccount" href="#">Delete Account</a>
                         <a class="dropdown-item" href="/covida/logout">Log Out</a>
                     </div>
                 </div>
@@ -57,9 +58,23 @@
         </nav>
         <br>
         <div class="container">
-            <div id="overlay" class="position-fixed animate">
+            <div id="loadingOverlay" class="overlay position-fixed animate">
                 <div class="w-100 d-flex justify-content-center align-items-center">
                 <div class="spinner-border"></div>
+                </div>
+            </div>
+            <div id="deleteOverlay" class="overlay position-fixed animate">
+                <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+                    <h1 class="font-weight-bold" style="text-align: center;">Are you sure you want to delete your account?</h1>
+                    <br>
+                    <div class="row">
+                        <div class="col-sm">
+                            <button class="btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteAccount" data-covida-username="{{user.username}}">Yes</button>
+                        </div>
+                        <div class="col-sm">
+                            <button class="btn btn-primary btn-lg btn-block mb-2" id="noDeleteAccount">No</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="messages sticky-top sticky-offset">
