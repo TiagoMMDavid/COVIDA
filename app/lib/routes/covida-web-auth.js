@@ -37,8 +37,7 @@ function handlerLoginPost(req, resp, next) {
                 if (user.password == password) {
                     req.logIn(user, (err) => {
                         if(err) return next(err)
-                        req.flash('userInfo', 'Welcome!')
-                        resp.redirect('/covida')
+                        resp.redirect(req.session.redirectUrl || '/covida')
                     })
                 } else {
                     req.flash('userError', 'Invalid credentials!')
@@ -77,7 +76,7 @@ function handlerSignupPost(req, resp, next) {
 
 function handlerLogout(req, resp, next) {
     req.logout()
-    resp.redirect('/covida')
+    resp.redirect(req.session.redirectUrl || '/covida')
 }
 
 function handlerDeleteAccount(req, resp, next) {
@@ -91,6 +90,8 @@ function handlerDeleteAccount(req, resp, next) {
                 } else {
                     req.flash('userError', 'Failed to delete user')
                 }
+                // Clear redirect url when deleting account
+                req.session.redirectUrl = null
                 resp.redirect('/covida')
             })
     }

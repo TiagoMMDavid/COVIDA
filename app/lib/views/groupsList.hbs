@@ -16,6 +16,8 @@
                     </button>
                 </th>
             </tr>
+        </thead>
+        <tbody>
             <tr>
                 <th scope="col" colspan="4">
                     <div class="groupForm collapse" id="addGroupForm">
@@ -33,15 +35,15 @@
                     </div>
                 </th>
             </tr>
-        </thead>
-        {{#each groups}}
-            <tr class="groupItem" data-covida-group-id={{id}}>
-                <td class="groupName" style="vertical-align: middle;"><b>{{{name}}}</b></td>
-                <td style="vertical-align: middle;"><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
-                <td><a href='{{groupDetails}}' class="btn btn-outline-primary btn-block">See group details</a></td>
-                <td><button class="btn btn-danger btn-block" data-covida-username="{{../user.username}}">Delete Group</button></td>
-            </tr>
-        {{/each}}
+            {{#each groups}}
+                <tr class="groupItem" data-covida-group-id={{id}}>
+                    <td class="groupName" style="vertical-align: middle;"><b>{{{name}}}</b></td>
+                    <td style="vertical-align: middle;"><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
+                    <td><a href='{{groupDetails}}' class="btn btn-outline-primary btn-block">View group details</a></td>
+                    <td><button class="btn btn-danger btn-block" data-covida-username="{{../user.username}}">Delete Group</button></td>
+                </tr>
+            {{/each}}
+        </tbody>
     </table>
 </div>
 <div class="emptyMessage">

@@ -10,17 +10,25 @@ const INTERNAL_ERROR = {
     message: 'Internal server error' 
 }
 
-router.get('/covida/games/top', handlerTopGames)
-router.get('/covida/games/search', handlerSearchGame)
-router.get('/covida/games/:game', handlerGameById)
+router.get('/covida/games/top', keepPageForAuthRedirect, handlerTopGames)
+router.get('/covida/games/search', keepPageForAuthRedirect, handlerSearchGame)
+router.get('/covida/games/:game', keepPageForAuthRedirect, handlerGameById)
 router.get('/covida/groups/:group', isAuthenticated, handlerGroupById)
 router.get('/covida/groups', isAuthenticated, handlerGroups)
-router.get('/covida', handlerHomepage)
+router.get('/covida', keepPageForAuthRedirect, handlerHomepage)
 router.get('/', handlerRoot)
 
 function isAuthenticated(req, resp, next) {
     if(req.user) next()
-    else resp.redirect('/covida/login')
+    else {
+        req.session.redirectUrl = req.url
+        resp.redirect('/covida/login')
+    }
+}
+
+function keepPageForAuthRedirect(req, resp, next) {
+    req.session.redirectUrl = req.url
+    next()
 }
 
 function handlerHomepage(req, resp, next) {

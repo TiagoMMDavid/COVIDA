@@ -62,6 +62,11 @@ function setup() {
         document.querySelector('#noDeleteAccount').addEventListener('click', () => handlerDeleteAccountClose())
         document.querySelector('#yesDeleteAccount').addEventListener('click', () => handlerDeleteAccount())
     }
+
+    const closeAlertButton = document.querySelector('#closeAlertButton')
+    if (closeAlertButton) {
+        closeAlertButton.addEventListener('click', () => dismissAlert())
+    }
 }
 
 function handlerValidatePassword() {
@@ -177,11 +182,6 @@ function handlerRemoveGame(item, gameName, gameId) {
         .catch(err => alertMsg(err))
 }
 
-/**
- * 
- * @param {Element} nameElement
- * @param {Element} descriptionElement
- */
 function handlerAddGroup(nameElement, descriptionElement, username) {
     if (nameElement.reportValidity()) {
         const loc = document.location.href
@@ -226,10 +226,6 @@ function handlerAddGroup(nameElement, descriptionElement, username) {
     }
 }
 
-/**
- * 
- * @param {Element} select
- */
 function handlerAddGame(select) {
     const id = select.value
     if (id) {
@@ -260,8 +256,8 @@ function handlerAddGame(select) {
 
 function handlerDeleteAccountShow() {
     const overlay = document.querySelector('#deleteOverlay')
-    overlay.classList.remove('slideOut')
-    overlay.classList.add('slideIn')
+    overlay.classList.remove('slide-out')
+    overlay.classList.add('slide-in')
     overlay.style.display = 'flex'
 }
 
@@ -274,8 +270,8 @@ function handlerDeleteAccount() {
 
 function handlerDeleteAccountClose() {
     const overlay = document.querySelector('#deleteOverlay')
-    overlay.classList.remove('slideIn')
-    overlay.classList.add('slideOut')
+    overlay.classList.remove('slide-in')
+    overlay.classList.add('slide-out')
     setTimeout(() => overlay.style.display = 'none', 200)
 }
 
@@ -285,12 +281,12 @@ function addGroupToTable(groupId, groupURL, name, description, username) {
         .innerHTML = ''
 
     document
-        .querySelector('table')
+        .querySelector('tbody')
         .insertAdjacentHTML('beforeend',  
             `<tr class="groupItem" data-covida-group-id="${groupId}">
                 <td class="groupName" style="vertical-align: middle;"><b>${name}</b></td>
                 <td style="vertical-align: middle;"><i>${description || 'No description available'}</i></td>
-                <td><a href="${groupURL}" class="btn btn-outline-primary btn-block">See group details</a></td>
+                <td><a href="${groupURL}" class="btn btn-outline-primary btn-block">View group details</a></td>
                 <td><button class="btn btn-danger btn-block" data-covida-username="${username}">Delete Group</button></td>
             </tr>`
         )
@@ -311,25 +307,33 @@ function alertMsg(message, kind) {
     document
         .querySelector('.messages')
         .innerHTML = 
-            `<div class="alert alert-${kind} alert-dismissible animate slideIn" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            `<div class="alert alert-${kind} slide-in">
+                <button type="button" id="closeAlertButton" class="close">
+                    <i class="fas fa-times"></i>
                 </button>
                 ${message}
             </div>`
+    document.querySelector('#closeAlertButton').addEventListener('click', () => dismissAlert())
+}
+
+function dismissAlert() {
+    const overlay = document.querySelector('.alert')
+    overlay.classList.remove('slide-in')
+    overlay.classList.add('slide-out')
+    setTimeout(() => overlay.style.display = 'none', 200)
 }
 
 function startLoadingMsg() {
     const overlay = document.querySelector('#loadingOverlay')
-    overlay.classList.remove('slideOut')
-    overlay.classList.add('slideIn')
+    overlay.classList.remove('slide-out')
+    overlay.classList.add('slide-in')
     overlay.style.display = 'flex'
 }
 
 function finishLoadingMsg() {
     const overlay = document.querySelector('#loadingOverlay')
-    overlay.classList.remove('slideIn')
-    overlay.classList.add('slideOut')
+    overlay.classList.remove('slide-in')
+    overlay.classList.add('slide-out')
     setTimeout(() => overlay.style.display = 'none', 200)
 }
 
