@@ -19,7 +19,10 @@ router.get('/covida', keepPageForAuthRedirect, handlerHomepage)
 router.get('/', handlerRoot)
 
 function isAuthenticated(req, resp, next) {
-    if(req.user) next()
+    if(req.user) {
+        req.session.redirectUrl = null
+        next()
+    }
     else {
         req.session.redirectUrl = req.url
         resp.redirect('/covida/login')

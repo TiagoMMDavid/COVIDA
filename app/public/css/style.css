@@ -68,12 +68,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255,255,255,0.9);
-  z-index: 1;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 3;
+  backdrop-filter: blur(12px);
 }
 
 .alert-message {
     top: 62px;
+    z-index: 2;
 }
 
 html,body

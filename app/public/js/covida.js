@@ -56,6 +56,7 @@ function setup() {
             button.addEventListener('click', () => handlerAddGame(select))
         })
     
+    // Delete account
     const deleteAccountButton = document.querySelector('#deleteAccount')
     if (deleteAccountButton) {
         deleteAccountButton.addEventListener('click', () => handlerDeleteAccountShow())
@@ -63,6 +64,7 @@ function setup() {
         document.querySelector('#yesDeleteAccount').addEventListener('click', () => handlerDeleteAccount())
     }
 
+    // Close alert
     const closeAlertButton = document.querySelector('#closeAlertButton')
     if (closeAlertButton) {
         closeAlertButton.addEventListener('click', () => dismissAlert())
@@ -255,6 +257,7 @@ function handlerAddGame(select) {
 }
 
 function handlerDeleteAccountShow() {
+    $('.navbar-collapse').collapse('hide')
     const overlay = document.querySelector('#deleteOverlay')
     overlay.classList.remove('slide-out')
     overlay.classList.add('slide-in')
@@ -307,7 +310,7 @@ function alertMsg(message, kind) {
     document
         .querySelector('.messages')
         .innerHTML = 
-            `<div class="alert alert-${kind} slide-in">
+            `<div class="shadow-sm alert alert-${kind} slide-in">
                 <button type="button" id="closeAlertButton" class="close">
                     <i class="fas fa-times"></i>
                 </button>
