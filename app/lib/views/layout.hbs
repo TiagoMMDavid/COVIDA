@@ -3,12 +3,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>COVIDA</title>
         <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/css/custom.css">
+        <link rel="stylesheet" href="/css/style.css">
         <link rel="stylesheet" href="/css/fontawesome.css">
         <script type='text/javascript' src='/js/covida.js'></script>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="/covida">
             <img src="/favicon.ico" width="32" height="32" class="d-inline-block align-top" alt="">
             COVIDA
@@ -57,6 +57,30 @@
         </nav>
         <br>
         <div class="container">
+            <div id="overlay" class="position-fixed animate">
+                <div class="w-100 d-flex justify-content-center align-items-center">
+                <div class="spinner-border"></div>
+                </div>
+            </div>
+            <div class="messages sticky-top sticky-offset">
+                {{#if messages.error}}
+                    <div class="alert alert-warning alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{messages.error}}
+                    </div>
+                {{/if}}
+                {{#if messages.success}}
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{messages.success}}
+                    </div>
+                {{/if}}
+            </div>
+
             {{{body}}}
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

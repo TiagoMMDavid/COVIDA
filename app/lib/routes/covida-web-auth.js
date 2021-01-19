@@ -1,3 +1,5 @@
+'use-strict'
+
 const router = require('express').Router()
 const passport = require('passport')
 const users = require('../repo/covida-users')
@@ -13,7 +15,6 @@ router.post('/covida/login', handlerLoginPost)
 router.get('/covida/signup', handlerSignup)
 router.post('/covida/signup', handlerSignupPost)
 router.get('/covida/logout', handlerLogout)
-router.get('/covida/user-info', handlerGetUserInfo)
 
 function handlerLogin(req, resp, next) {
     resp.render('login', {
@@ -76,19 +77,6 @@ function handlerLogout(req, resp, next) {
     req.logout()
     resp.redirect('/covida')
 }
-
-function handlerGetUserInfo(req, resp, next) {
-    const user = req.user
-    if (user) {
-        return resp.json(user)
-    } 
-    resp.status(400)
-    resp.json({
-        'status': 400,
-        'message': 'User not logged in!'
-    })
-}
-
 
 passport.serializeUser(function(user, done) {
     done(null, user.username)

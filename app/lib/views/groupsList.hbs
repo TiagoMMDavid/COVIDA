@@ -1,7 +1,13 @@
-<h3 style="text-align: center;">Your groups</h3>
-<div class="messages"></div>
-<br>
-<div class="groupForm">
+<h3 style="text-align: center;">
+    <div id="groupName" style="display: inline-block;">
+        Your Groups
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-toggle="collapse" data-target="#addGroupForm" aria-expanded="false" aria-controls="addGroupForm">
+        <i class="fas fa-plus"></i>
+    </button>
+</h3>
+<div class="groupForm collapse" id="addGroupForm">
+    <br>
     <div class="row">
         <div class="col">
             <input type="text" id="name" class="form-control mb-2" placeholder="Name" autocomplete="off" required>
@@ -10,17 +16,18 @@
             <input type="text" id="description" class="form-control mb-2" autocomplete="off" placeholder="Description"/>
         </div>
         <div class="col-3">
-            <button class="btn btn-primary btn-block mb-2">Add Group</button>
+            <button class="btn btn-primary btn-block mb-2" data-covida-username="{{user.username}}">Add Group</button>
         </div>
     </div>
 </div>
+<br>
 <table class="table">
 {{#each groups}}
     <tr class="groupItem" data-covida-group-id={{id}}>
         <td class="groupName"><b>{{{name}}}</b></td>
         <td><i>{{#if description}}{{{description}}}{{else}}No description available{{/if}}</i></td>
         <td><a href='{{groupDetails}}' class="btn btn-primary btn-block">See group details</a></td>
-        <td><button class="btn btn-danger btn-block">Delete Group</button></td>
+        <td><button class="btn btn-danger btn-block" data-covida-username="{{../user.username}}">Delete Group</button></td>
     </tr>
 {{/each}}
 </table>

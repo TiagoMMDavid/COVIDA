@@ -7,8 +7,8 @@
     </button>
 </h3>
 <h5 style="text-align: center;" id="groupDescription">{{#if group.description}}{{{group.description}}}{{/if}}</h5>
-<br>
 <div class="collapse" id="editGroupForm">
+    <br>
     <div class="row">
         <div class="col">
             <input type="text" class="form-control mb-2" placeholder="{{{group.name}}}" autocomplete="off" id="editGroupName">
@@ -24,24 +24,46 @@
         </div>
     </div>
 </div>
-<div class="messages"><br></div>
+<br>
 <div class="row">
     <div class="col">
         <a class="btn btn-primary mb-2 btn-block" href="/covida/games/search">Add a game</a>
     </div>
 </div>
+<br>
+<form method="GET" autocomplete="off">
+    <div class="form-row">
+        <div class="col-form-label">
+            <label>Limit by rating</label>
+        </div>
+        <div class="col">
+            <input type="number" class="form-control mb-2" name="min" value="{{min}}" placeholder="Minimum Rating" min="0" max="100"/>
+        </div>
+        <div class="col">
+            <input type="number" class="form-control mb-2" name="max" value="{{max}}" placeholder="Maximum Rating" min="0" max="100"/>
+        </div>
+        <input type="submit" class="btn btn-primary mb-2" value="Submit"/>
+    </div>
+</form>
+{{#unless isEmpty}}
 <table class="table">
-{{#each group.games}}
-    <tr class="gameItem" data-covida-game-id={{id}}>
-        <td class="gameName"><b>{{name}}</b></td>
-        <td><a href='{{gameDetails}}' class="btn btn-primary btn-block">See game details</a></td>
-        <td><button class="btn btn-danger btn-block">Delete Game</button></td>
+    <tr>
+        <td >Name</td>
+        <td colspan="3">Rating</td>
     </tr>
-{{/each}}
-</table>
+    {{#each group.games}}
+        <tr class="gameItem" data-covida-game-id={{id}}>
+            <td class="gameName"><b>{{name}}</b></td>
+            <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
+            <td><a href='{{gameDetails}}' class="btn btn-primary btn-block">See game details</a></td>
+            <td><button class="btn btn-danger btn-block">Delete Game</button></td>
+        </tr>
+    {{/each}}
+    </table>
+{{/unless}}
 <div class="emptyMessage">
     {{#if isEmpty}}
         <hr>
-        <h5 style="text-align: center;">This group has no games</h5>
+        <h5 style="text-align: center;">No games found</h5>
     {{/if}}
 </div>

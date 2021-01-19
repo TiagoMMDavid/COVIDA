@@ -102,7 +102,8 @@ const SORTED_FAVORITE_GAMES = [
     {
         'id': 135400,
         'follows': 8,
-        'name': 'Minecraft'
+        'name': 'Minecraft',
+        'total_rating': 70.26100338264459
     }
 ]
 

@@ -46,6 +46,15 @@ function getGameById(gameId) {
     })
 }
 
+/** 
+ * Gets the games with given ids. The array returned is sorted by rating, from highest to lowest
+ * @param {Array<Integer>} ids ids of games
+ * @returns {Promise<Array<GameDetail>>} A promise containing an array of GameDetail objects with given ids (can be empty)
+ */
+function getGamesByIds(gameIds) {
+    return igdb.getGamesByIds(gameIds)
+}
+
 /**
  * Gets all groups in the database
  * @returns {Promise<Array<Group>} Promise of an array containing every group
@@ -183,7 +192,7 @@ function listGroupGames(groupId, minRating, maxRating) {
         })
         .then(games => {
             if (games != groupGames)
-                groupGames.games = games.filter(game => game.total_rating >= minRating && game.total_rating <= maxRating)
+                groupGames.games = games.filter(game => (game.total_rating == null) || (game.total_rating >= minRating && game.total_rating <= maxRating))
 
             return groupGames
         })
@@ -194,6 +203,7 @@ module.exports = {
     getTopGames,
     searchGames,
     getGameById,
+    getGamesByIds,
     getGroups,
     getGroup,
     addGroup,

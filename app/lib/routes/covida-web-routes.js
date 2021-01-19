@@ -16,6 +16,7 @@ router.get('/covida/games/:game', handlerGameById)
 router.get('/covida/groups/:group', isAuthenticated, handlerGroupById)
 router.get('/covida/groups', isAuthenticated, handlerGroups)
 router.get('/covida', handlerHomepage)
+router.get('/', handlerRoot)
 
 function isAuthenticated(req, resp, next) {
     if(req.user) next()
@@ -37,6 +38,10 @@ function handlerHomepage(req, resp, next) {
         ],
         'user': req.user
     })
+}
+
+function handlerRoot(req, resp, next) {
+    resp.redirect('/covida')
 }
 
 function handlerTopGames(req, resp, next) {
@@ -145,6 +150,9 @@ function handlerGroups(req, resp, next) {
 }
 
 function handlerGroupById(req, resp, next) {
+    const min = req.query.min
+    const max = req.query.max
+
     service.getGroup(req.params.group)
         .then(group => {
             if (!group || !req.user.groups.some(userGroup => userGroup.id == group.id)) {
@@ -155,8 +163,30 @@ function handlerGroupById(req, resp, next) {
                 return next(err)
             }
 
+            if (min != null || max != null) {
+                return service.listGroupGames(group.id, min, max)
+            } else {
+                let ids = []
+                group.games.forEach(game => ids.push(game.id))
+                return service.getGamesByIds(ids)
+                    .then(games => {
+                        return {
+                            'group': group,
+                            'games': games
+                        }
+                    })
+            }
+        })
+        .then(groupGames => {
+            if (!groupGames.games) {
+                req.flash('limitError', 'Invalid limit specified. Maximum must be less than minimum.')
+                return resp.redirect(`/covida/groups/${group.id}`)
+            }
+            
             const host = req.headers.host
-            group.games = group.games.map(game => {
+
+            const group = groupGames.group
+            group.games = groupGames.games.map(game => {
                 game.gameDetails = `http://${host}/covida/games/${game.id}`
 
                 if (game.total_rating) 
@@ -167,6 +197,11 @@ function handlerGroupById(req, resp, next) {
             resp.render('groupDetails', {
                 'group': group,
                 'isEmpty': group.games.length == 0,
+                'min': min,
+                'max': max,
+                'messages': {
+                    'error': req.flash('limitError')
+                },
                 'user': req.user
             })
         })

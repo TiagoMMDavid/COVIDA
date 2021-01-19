@@ -1,0 +1,94 @@
+@media (min-width: 992px) {
+  .animate {
+    animation-duration: 0.2s;
+    -webkit-animation-duration: 0.2s;
+    animation-fill-mode: both;
+    -webkit-animation-fill-mode: both;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(-1rem);
+    opacity: 0;
+  }
+  100% {
+    transform:translateY(0rem);
+    opacity: 1;
+  }
+  0% {
+    transform: translateY(-1rem);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateY(0rem);
+    opacity: 1;
+  }
+  100% {
+    transform:translateY(-1rem);
+    opacity: 0;
+  }
+  0% {
+    transform: translateY(0rem);
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes slideIn {
+  0% {
+    -webkit-transform: transform;
+    -webkit-opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -webkit-opacity: 1;
+    -webkit-display: none;
+  }
+  0% {
+    -webkit-transform: translateY(-1rem);
+    -webkit-opacity: 0;
+  }
+}
+
+@-webkit-keyframes slideOut {
+  0% {
+    -webkit-transform: transform;
+    -webkit-opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-1rem);
+    -webkit-opacity: 0;
+  }
+  0% {
+    -webkit-transform: translateY(0);
+    -webkit-opacity: 1;
+  }
+}
+
+.slideIn {
+  -webkit-animation-name: slideIn;
+  animation-name: slideIn;
+}
+
+.slideOut {
+  -webkit-animation-name: slideOut;
+  animation-name: slideOut;
+}
+
+#overlay {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 1;
+}
+
+.sticky-offset {
+    top: 62px;
+}

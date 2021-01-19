@@ -1,42 +1,52 @@
-<div>
-    <h2 style="text-align: center;">Top Games</h2>
-    </br>
-    <div>
-        {{#if messages.error}}
-            <div class="alert alert-warning alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                {{messages.error}}
+<h2 style="text-align: center;">Top Games</h2>
+<br>
+<br>
+<form method="GET">
+    <div class="form-row">
+        <div class="col-form-label">
+            <label>Number of games</label>
+        </div>
+        <div class="col">
+            <input type="number" class="form-control mb-2" name="limit" value="{{limit}}" placeholder="Maximum amount of games" min="1" max="500" required/>
+        </div>
+        <input type="submit" value="Search" class="btn btn-primary mb-2"/>
+    </div>
+</form>
+<hr>
+{{#each games}}
+    <div class="row mb-2">
+        <div class="col-7">
+            <h3 style="display: inline;">{{name}}</h3>
+        </div>
+        {{#if ../user}}
+            <div class="col">
+                <div class="groupSelectForm row">
+                    <div class="col">
+                        <select class="custom-select" id="groupSelect" data-covida-game-id="{{id}}" autocomplete="off">
+                            <option selected value="">Choose...</option>
+                            {{#each ../user.groups}}
+                                <option value="{{id}}">{{{name}}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-primary btn-block">Add to Group</button>
+                    </div> 
+                </div>
             </div>
         {{/if}}
     </div>
-    <form method="GET">
-        <div class="form-row">
-            <div class="col-form-label">
-                <label>Number of games</label>
-            </div>
-            <div class="col">
-                <input type="number" class="form-control mb-2" name="limit" value="{{limit}}" placeholder="Maximum amount of games" min="1" max="500" required/>
-            </div>
-            <input type="submit" value="Search" class="btn btn-primary mb-2"/>
-        </div>
-    </form>
-    <hr>
-    {{#each games}}
-        <h3>{{name}}</h3>
-        <table class="table table-striped table-bordered">
-            <tr>
-                <td>Summary</td>
-                <td>Followers</td>
-                <td>Rating</td>
-            </tr>
-            <tr>
-                <td>{{#if summary}}{{summary}}{{else}}N/A{{/if}}</td>
-                <td>{{#if follows}}{{follows}}{{else}}N/A{{/if}}</td>
-                <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
-            </tr>
-        </table>
-        <br>
-    {{/each}}
-</div>
+    <table class="table table-striped table-bordered">
+        <tr>
+            <td>Summary</td>
+            <td>Followers</td>
+            <td>Rating</td>
+        </tr>
+        <tr>
+            <td>{{#if summary}}{{summary}}{{else}}N/A{{/if}}</td>
+            <td>{{#if follows}}{{follows}}{{else}}N/A{{/if}}</td>
+            <td>{{#if total_rating}}{{total_rating}}{{else}}N/A{{/if}}</td>
+        </tr>
+    </table>
+    <br>
+{{/each}}
