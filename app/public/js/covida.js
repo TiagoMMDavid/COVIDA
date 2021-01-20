@@ -119,11 +119,11 @@ function handlerEditGroup(groupName, groupDescription, username) {
                 groupDescription.value = ''
                 if (name) {
                     document.querySelector('#groupName').innerHTML = name
-                    groupName.placeholder.innerHTML = name
+                    groupName.placeholder = name
                 }
                 if (description) {
                     document.querySelector('#groupDescription').innerHTML = description
-                    groupDescription.placeholder.innerHTML = description
+                    groupDescription.placeholder = description
                 }
             } 
 
