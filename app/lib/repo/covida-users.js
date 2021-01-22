@@ -25,6 +25,9 @@ let URL_USERS = `http://${es.host}:${es.port}/${es.usersIndex}/_doc/`
  * @returns {Promise<User>} Promise of a user
  */
 function addUser(username, password) {
+    if (!username || !password)
+        return Promise.resolve().then(() => null)
+
     return getUser(username)
         .then(user => {
             if (user) return null
@@ -128,10 +131,10 @@ function addGroup(username, groupId, groupName) {
  * Edits a group from the array of groups of the user with given username
  * @param {String} username
  * @param {String} groupId
- * @param {String} groupName 
+ * @param {String} newGroupName 
  * @returns {Promise<User>} Promise of a user
  */
-function editGroup(username, groupId, groupName) {
+function editGroup(username, groupId, newGroupName) {
     return getUser(username)
         .then(user => {
             if (!user) return null
@@ -139,7 +142,7 @@ function editGroup(username, groupId, groupName) {
             const filteredGroups = user.groups.filter(group => group.id == groupId)
             if (filteredGroups.length == 0) return null
 
-            filteredGroups[0].name = groupName
+            filteredGroups[0].name = newGroupName
 
             const options = {
                 method: 'PUT',

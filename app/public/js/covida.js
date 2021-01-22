@@ -208,20 +208,23 @@ function handlerAddGroup(nameElement, descriptionElement, username) {
         })
             .then(resp => {
                 finishLoadingMsg()
-                if (resp.status != 201) alert(resp.statusText)
-                else {
-                    resp.json()
-                        .then(json => {
-                            const groupURL = json.groupDetails.replace('/api/covida', '/covida')
-                            const groupId = json.groupId
+                if (resp.status != 201) {
+                    alert(resp.statusText)
+                    return null
+                } else {
+                    return resp.json()
+                }
+            })
+            .then(json => {
+                if (json) {
+                    const groupURL = json.groupDetails.replace('/api/covida', '/covida')
+                    const groupId = json.groupId
 
-                            addGroupToTable(groupId, groupURL, name, description, username)
-                            $('#addGroupForm').collapse('hide')
-                            alertMsg(`Group "${name}" successfully added.`, 'success')
-                            descriptionElement.value = ''
-                            descriptionElement.blur()
-                            nameElement.value = ''
-                        })
+                    addGroupToTable(groupId, groupURL, name, description, username)
+                    $('#addGroupForm').collapse('hide')
+                    alertMsg(`Group "${name}" successfully added.`, 'success')
+                    descriptionElement.value = ''
+                    nameElement.value = ''
                 }
             })
             .catch(err => alertMsg(err))
@@ -241,15 +244,19 @@ function handlerAddGame(select) {
         })
             .then(resp => {
                 finishLoadingMsg()
-                if (resp.status != 201) alert(resp.statusText)
-                else {
-                    resp.json()
-                        .then(json => {
-                            const gameName = json.matchName
-                            const groupUrl = json.groupDetails.replace('/api/covida', '/covida')
+                if (resp.status != 201) {
+                    alert(resp.statusText)
+                    return null
+                } else {
+                    return resp.json()
+                }
+            })
+            .then(json => {
+                if (json) {
+                    const gameName = json.matchName
+                    const groupUrl = json.groupDetails.replace('/api/covida', '/covida')
 
-                            alertMsg(`Game "${gameName}" successfully added. See <a href=${groupUrl}> here.</a>`, 'success')
-                        })
+                    alertMsg(`Game "${gameName}" successfully added. See <a href=${groupUrl}> here.</a>`, 'success')
                 }
             })
             .catch(err => alertMsg(err))
