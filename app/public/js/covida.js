@@ -14,7 +14,7 @@ function setup() {
         .forEach(item => {
             const groupName = item.querySelector('.groupName').textContent
             const button = item.querySelector('button')
-            button.addEventListener('click', () => handlerRemoveGroup(item, groupName, item.dataset.covidaGroupId, button.dataset.covidaUsername))
+            button.addEventListener('click', () => handlerRemoveGroup(button, item, groupName, item.dataset.covidaGroupId, button.dataset.covidaUsername))
         })
 
     // Add group to table
@@ -23,7 +23,7 @@ function setup() {
         const name = groupForm.querySelector('#name')
         const description = groupForm.querySelector('#description')
         const button = groupForm.querySelector('button')
-        button.addEventListener('click', () => handlerAddGroup(name, description, button.dataset.covidaUsername))
+        button.addEventListener('click', () => handlerAddGroup(button, name, description, button.dataset.covidaUsername))
         name.addEventListener('keyup', (event) => mapEnterToButton(name, event, button))
         description.addEventListener('keyup', (event) => mapEnterToButton(description, event, button))
     }
@@ -34,7 +34,7 @@ function setup() {
         const groupName = editGroupForm.querySelector('#editGroupName')
         const groupDescription = editGroupForm.querySelector('#editGroupDescription')
         const button = editGroupForm.querySelector('button')
-        button.addEventListener('click', () => handlerEditGroup(groupName, groupDescription, button.dataset.covidaUsername))
+        button.addEventListener('click', () => handlerEditGroup(button, groupName, groupDescription, button.dataset.covidaUsername))
         groupDescription.addEventListener('keyup', (event) => mapEnterToButton(groupDescription, event, button))
         groupName.addEventListener('keyup', (event) => mapEnterToButton(groupName, event, button))
     }
@@ -45,7 +45,7 @@ function setup() {
         .forEach(item => {
             const gameName = item.querySelector('.gameName').textContent
             const button = item.querySelector('button')
-            button.addEventListener('click', () => handlerRemoveGame(item, gameName, item.dataset.covidaGameId))
+            button.addEventListener('click', () => handlerRemoveGame(button, item, gameName, item.dataset.covidaGameId))
         })
 
     // Add game to group
@@ -53,7 +53,7 @@ function setup() {
         .forEach(item => {
             const button = item.querySelector('button')
             const select = item.querySelector('select')
-            button.addEventListener('click', () => handlerAddGame(select))
+            button.addEventListener('click', () => handlerAddGame(button, select))
         })
     
     // Delete account
@@ -87,7 +87,8 @@ function handlerValidatePassword() {
     }
 }
 
-function handlerEditGroup(groupName, groupDescription, username) {
+function handlerEditGroup(elem, groupName, groupDescription, username) {
+    elem.blur()
     if (groupDescription.value.length == 0 && groupName.value.length == 0) {
         return alertMsg('You need to change at least one field.')
     }
@@ -131,7 +132,8 @@ function handlerEditGroup(groupName, groupDescription, username) {
         .catch(err => alertMsg(err))
 }
 
-function handlerRemoveGroup(item, groupName, groupId, username) {
+function handlerRemoveGroup(elem, item, groupName, groupId, username) {
+    elem.blur()
     startLoadingMsg()
     const loc = document.location.href
     const path = `${loc.replace('/covida', '/api/covida')}/${groupId}`
@@ -160,7 +162,8 @@ function handlerRemoveGroup(item, groupName, groupId, username) {
         .catch(err => alertMsg(err))
 }
 
-function handlerRemoveGame(item, gameName, gameId) {
+function handlerRemoveGame(elem, item, gameName, gameId) {
+    elem.blur()
     startLoadingMsg()
     const loc = document.location.href.split('?')[0]
     const path =  `${loc.replace('/covida', '/api/covida')}/games/${gameId}`
@@ -184,7 +187,8 @@ function handlerRemoveGame(item, gameName, gameId) {
         .catch(err => alertMsg(err))
 }
 
-function handlerAddGroup(nameElement, descriptionElement, username) {
+function handlerAddGroup(elem, nameElement, descriptionElement, username) {
+    elem.blur()
     if (nameElement.reportValidity()) {
         const loc = document.location.href
 
@@ -231,7 +235,8 @@ function handlerAddGroup(nameElement, descriptionElement, username) {
     }
 }
 
-function handlerAddGame(select) {
+function handlerAddGame(elem, select) {
+    elem.blur()
     const id = select.value
     if (id) {
         startLoadingMsg()
@@ -307,7 +312,8 @@ function addGroupToTable(groupId, groupURL, name, description, username) {
             const id = item.dataset.covidaGroupId
             if (id == groupId) {
                 const groupName = item.querySelector('.groupName').textContent
-                item.querySelector('button').addEventListener('click', () => handlerRemoveGroup(item, groupName, id, username))
+                const button = item.querySelector('button')
+                button.addEventListener('click', () => handlerRemoveGroup(button, item, groupName, id, username))
             }
         })
 }
