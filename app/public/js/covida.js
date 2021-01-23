@@ -24,8 +24,8 @@ function setup() {
         const description = groupForm.querySelector('#description')
         const button = groupForm.querySelector('button')
         button.addEventListener('click', () => handlerAddGroup(name, description, button.dataset.covidaUsername))
-        name.addEventListener('keyup', (event) => mapEnterToButton(event, button))
-        description.addEventListener('keyup', (event) => mapEnterToButton(event, button))
+        name.addEventListener('keyup', (event) => mapEnterToButton(name, event, button))
+        description.addEventListener('keyup', (event) => mapEnterToButton(description, event, button))
     }
 
     // Edit group
@@ -35,8 +35,8 @@ function setup() {
         const groupDescription = editGroupForm.querySelector('#editGroupDescription')
         const button = editGroupForm.querySelector('button')
         button.addEventListener('click', () => handlerEditGroup(groupName, groupDescription, button.dataset.covidaUsername))
-        groupDescription.addEventListener('keyup', (event) => mapEnterToButton(event, button))
-        groupName.addEventListener('keyup', (event) => mapEnterToButton(event, button))
+        groupDescription.addEventListener('keyup', (event) => mapEnterToButton(groupDescription, event, button))
+        groupName.addEventListener('keyup', (event) => mapEnterToButton(groupName, event, button))
     }
 
     // Remove game from group
@@ -360,8 +360,9 @@ function sanitizeInput(input) {
     return input.replace(reg, (match)=>(map[match]))
 }
 
-function mapEnterToButton(event, button) {
+function mapEnterToButton(elem, event, button) {
     if (event.key == 'Enter') {
+        elem.blur()
         button.click()
     }
 }
