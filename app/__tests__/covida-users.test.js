@@ -245,6 +245,12 @@ test('Test users module editGroup successfully', () => {
         .catch(err => expect(err).toBeFalsy())
 })
 
+test('Test users module editGroup for absent group', () => {
+    return users.editGroup('editUser', 10, 'N/A')
+        .then(user => expect(user).toBeFalsy())
+        .catch(err => expect(err).toBeFalsy())
+})
+
 test('Test users module editGroup for absent user', () => {
     return users.editGroup('N/A', 1, 'NewFavorite')
         .then(user => expect(user).toBeFalsy())
