@@ -60,12 +60,18 @@ function handlerRoot(req, resp, next) {
 }
 
 function handlerTopGames(req, resp, next) {
+    // Check if limit is a number
     const limit = req.query.limit || 10
+    if (limit && isNaN(Number(limit))) {
+        req.flash('limitError', 'Invalid limit specified. Must be a number between 0 and 500')
+        return resp.redirect('/covida/games/top')
+    }
+
     const err = req.flash('limitError')
     service.getTopGames(limit)
         .then(games => {
             if (!games) {
-                req.flash('limitError', 'Invalid limit specified. Must be between 0 and 500')
+                req.flash('limitError', 'Invalid limit specified. Must be a number between 0 and 500')
                 return resp.redirect('/covida/games/top')
             }
             resp.render('topGames', {
@@ -106,15 +112,21 @@ function handlerGameById(req, resp, next) {
 }
 
 function handlerSearchGame(req, resp, next) {
+    // Check if limit is a number
     const limit = req.query.limit || 10
-    const err = req.flash('limitError')
     const name = req.query.name
+    if (limit && isNaN(Number(limit))) {
+        req.flash('limitError', 'Invalid limit specified. Must be a number between 0 and 500')
+        return resp.redirect(`/covida/games/search?name=${name || ''}`)
+    }
+
+    const err = req.flash('limitError')
     if (name) {
         service.searchGames(name, limit)
             .then(games => {
                 if (!games) {
-                    req.flash('limitError', 'Invalid limit specified. Must be between 0 and 500')
-                    return resp.redirect('/covida/games/search')
+                    req.flash('limitError', 'Invalid limit specified. Must be a number between 0 and 500')
+                    return resp.redirect(`/covida/games/search?name=${name || ''}`)
                 }
                 resp.render('searchGames', {
                     'games': games.map(game => {
@@ -167,6 +179,7 @@ function handlerGroups(req, resp, next) {
 function handlerGroupById(req, resp, next) {
     const min = req.query.min
     const max = req.query.max
+    const limitErr = req.flash('limitError')
 
     service.getGroup(req.params.group)
         .then(group => {
@@ -178,8 +191,8 @@ function handlerGroupById(req, resp, next) {
                 return next(err)
             }
 
-            if (min != null || max != null) {
-                return service.listGroupGames(group.id, min, max)
+            if (limitErr.length == 0 && (min != null || max != null)) {
+                return service.listGroupGames(group.id, Number(min), Number(max))
             } else {
                 let ids = []
                 group.games.forEach(game => ids.push(game.id))
@@ -195,8 +208,8 @@ function handlerGroupById(req, resp, next) {
         .then(groupGames => {
             if(groupGames) {
                 if (!groupGames.games) {
-                    req.flash('limitError', 'Invalid limit specified. Maximum must be less than minimum.')
-                    return resp.redirect(`/covida/groups/${groupGames.group.id}`)
+                    req.flash('limitError', 'Invalid limit specified. Minimum must be less than maximum.')
+                    return resp.redirect(req.originalUrl)
                 }
             
                 const host = req.headers.host
@@ -216,7 +229,7 @@ function handlerGroupById(req, resp, next) {
                     'min': min,
                     'max': max,
                     'messages': {
-                        'error': req.flash('limitError')
+                        'error': limitErr
                     },
                     'user': req.user
                 })

@@ -95,7 +95,6 @@ function getBulkBodyStringGroups() {
         bodyString += `${JSON.stringify(noIdGroup)}\n`
     })
 
-    console.log(bodyString)
     return bodyString   
 }
 
@@ -107,7 +106,6 @@ function getBulkBodyStringUsers() {
         bodyString += `${JSON.stringify(user)}\n`
     })
 
-    console.log(bodyString)
     return bodyString   
 }
 
