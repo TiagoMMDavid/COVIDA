@@ -196,7 +196,7 @@ function handlerGroupById(req, resp, next) {
             if(groupGames) {
                 if (!groupGames.games) {
                     req.flash('limitError', 'Invalid limit specified. Maximum must be less than minimum.')
-                    return resp.redirect(`/covida/groups/${group.id}`)
+                    return resp.redirect(req.path)
                 }
             
                 const host = req.headers.host
