@@ -76,7 +76,12 @@ function handlerValidatePassword() {
     const confirm_password = document.getElementById('confirm-pass')
     const button = document.getElementById('button')
 
-    if (password.value != confirm_password.value || confirm_password.value.length == 0) {
+    if (password.value.length == 0) {
+        button.setAttribute('disabled', '')
+        confirm_password.classList.remove('is-valid')
+        confirm_password.classList.remove('is-invalid')
+    }
+    else if (password.value != confirm_password.value || confirm_password.value.length == 0) {
         button.setAttribute('disabled', '')
         confirm_password.classList.remove('is-valid')
         confirm_password.classList.add('is-invalid')
