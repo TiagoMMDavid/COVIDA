@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest",
-	"start": "node index.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,10 +18,10 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "express-sitemap-html": "^1.2.2",
-    "hbs": "^4.1.1",
+    "hbs": "^4.1.2",
     "node-fetch": "^2.6.1",
     "passport": "^0.4.1",
-    "urllib": "^2.36.1"
+    "urllib": "^2.37.3"
   },
   "devDependencies": {
     "@types/jest": "^26.0.15",
