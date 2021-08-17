@@ -12,13 +12,13 @@ const routesWebApi = require('./routes/covida-web-routes')
 const routesAuth = require('./routes/covida-web-auth')
 const sitemap = require('express-sitemap-html')
 
-const PORT = 8000
+let PORT = process.env.COVIDA_PORT | 8000
 let server
 
-function init(groupsIndex, done) {
-    if(groupsIndex) {
-        require('./repo/covida-db').init(groupsIndex)
-    }
+function init(groupsIndex, port, done) {
+    // Optional parameters
+    if(groupsIndex) require('./repo/covida-db').init(groupsIndex)
+    if(port) PORT = Number(port)
 
     const app = express()
     app.set('view engine', 'hbs')

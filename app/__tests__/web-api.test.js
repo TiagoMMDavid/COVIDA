@@ -97,7 +97,7 @@ beforeAll(done => {
 
     fetch(`http://${es.host}:${es.port}/${es.groupsIndex}/_doc/_bulk/?refresh`, options)
         .then(() => {
-            server.init(es.groupsIndex, done)
+            server.init(es.groupsIndex, null, done)
         })
 })
 
