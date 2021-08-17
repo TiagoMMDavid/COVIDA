@@ -36,7 +36,9 @@ COVIDA exposes the following functionalities:
   - Manage videogames (Add/Delete/List)
 
 ## Preview
-<img src="resources/app-preview.png" width="850">
+<img src="resources/preview-authentication.gif" width="850">
+<img src="resources/preview-games.png" width="850">
+<img src="resources/preview-groups.png" width="850">
 
 ## Requirements
 Before running the application, the following steps are necessary:
