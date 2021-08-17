@@ -1,7 +1,7 @@
 # COVIDA - Chelas Open VIDeogame Application
 
 ## Overview
-Chelas Open VIDeogame Application (COVIDA) is a web application which allows users to search and browse videogames with the possibility of inserting and managing them into groups.
+Chelas Open VIDeogame Application (COVIDA) is a web application that allows users to search and browse videogames with the possibility of inserting and managing them into groups.
 
 The groups are made by the user and are restricted to its owner. These can be customized with a name, description and a selection of games. The Web Application provides an authentication functionality for users to create and log into their accounts.
 
@@ -85,16 +85,36 @@ COVIDA_AUTHORIZATION=YOUR_ACCESS_TOKEN
 
 
 ## Run The Application
-...
+After setting up all the requirements, the application can be run. Make sure [Node.js](https://nodejs.org/en/) is installed on your machine!
 
 ### Install the dependencies
-...
+Firstly, the application dependencies need to be installed.
+
+To do this, execute the following command in the `/app` directory:
+```
+npm install
+```
 
 ### Run the tests
-...
+To assure the application functions correctly there were developed unit tests and integration tests.
+
+Although not necessary, if you desire to run the tests, execute the following command:
+```
+npm run test
+```
 
 ### Run the Web Application
-...
+The Web Application provides two optional parameters to run the App:
+- The port where the HTTP Server communicates (`8000` if omitted)
+- The Elasticsearch index used to store data (`'covida-groups'` if omitted)
+
+There are two ways to change the default port. You can either define the environment variable `COVIDA_PORT` or put it as a first argument while running the application.
+The Elasticsearch index used can be changed through the second argument.
+
+To run the web application, execute the following command:
+```
+npm start [PORT] [ELASTICSEARCH_INDEX]
+```
 
 ## Credits
 This application was implemented in the context of the Internet Programming class at [ISEL](https://www.isel.pt/).
