@@ -1,23 +1,99 @@
 # COVIDA - Chelas Open VIDeogame Application
 
 ## Overview
-...
+Chelas Open VIDeogame Application (COVIDA) is a web application which allows users to search and browse videogames with the possibility of inserting and managing them into groups.
+
+The groups are made by the user and are restricted to its owner. These can be customized with a name, description and a selection of games. The Web Application provides an authentication functionality for users to create and log into their accounts.
+
+All the data is stored through the use of [Elasticsearch](https://www.elastic.co/elasticsearch/). The information about videogames is gathered through the [IGDB API](https://www.igdb.com/api).
 
 ## Table of Contents
 - [Functionalities](#functionalities)
 - [Preview](#preview)
 - [Requirements](#requirements)
+  - [Elasticsearch](#elasticsearch)
+  - [IGDB API](#igdb-api)
+- [Run The Application](#run-the-application)
+  - [Install the dependencies](#install-the-dependencies)
+  - [Run the tests](#run-the-tests)
+  - [Run the Web Application](#run-the-web-application)
 - [Credits](#credits)
 
 ## Functionalities
 COVIDA exposes the following functionalities:
-- ...
-- ...
+- Functional and responsive Web Application to manage user created videogame groups
+- Accessible HTTP API in paths preceded with `/api/covida`
+- Authentication feature
+  - Possibility to create accounts
+  - Sign into your account
+  - Delete your account
+- List the top videogames
+  - Number of results shown can be customizable
+  - Possibility to add videogames to groups
+- Search for videogames by name
+- Manage your groups
+  - Create, Edit and Delete
+  - Manage videogames (Add/Delete/List)
 
 ## Preview
 <img src="resources/app-preview.png" width="850">
 
 ## Requirements
+Before running the application, the following steps are necessary:
+
+### Elasticsearch
+The application requires to store information about the users and its respective videogame groups. In order to store this data, the NoSQL database [Elasticsearch](https://www.elastic.co/elasticsearch/) was chosen.
+
+Before running the application, do the following steps:
+1. Download and unzip Elasticsearch from [here](https://www.elastic.co/downloads/elasticsearch)
+2. Run `bin/elasticsearch` (or `bin\elasticsearch.bat` on Windows)
+
+Make sure the Elasticsearch window is always open while running the Web Application
+
+A more detailed guide is available [here](https://www.elastic.co/downloads/elasticsearch).
+
+### IGDB API
+Twitch provides a free API which shares data about videogames. This data includes information such as videogames, their rating, number of followers, and much more.
+
+In order to use the [IGDB API](https://www.igdb.com/api) there needs to be a registration of a Twitch Developer Application. With an application, a Client ID and Client Secret is provided. These two are necessary in order to obtain an access token that will be used to perform requests to the API.
+
+COVIDA utilizes environment variables to store the IGDB application Client's ID and its respective access token. In order to obtain these, the following steps are required:
+#### Create a Twitch Developer Application
+1. Sign Up to **Twitch Developer Console [here](https://dev.twitch.tv/login)**
+2. Ensure your twitch account has **Two Factor Authentication [enabled](https://www.twitch.tv/settings/security)**
+3. **[Register](https://dev.twitch.tv/console/apps/create)** your application
+4. **[Manage](https://dev.twitch.tv/console/apps)** your newly created application
+5. Generate a Client Secret by pressing **[New Secret]**
+6. Take note of the **Client ID** and **Client Secret**
+
+#### Request an Access Token
+To obtain an Access Token make a `POST` request to `https://id.twitch.tv/oauth2/token` with the following query string parameters, substituting your Client ID and Client Secret accordingly.
+```
+client_id=Your_Client_ID
+client_secret=Your_Client_Secret
+grant_type=client_credentials
+```
+
+A more detailed guide is available [here](https://api-docs.igdb.com/#about).
+
+#### Setup the Environment Variables
+After retrieving the application Client's ID and a valid access token, setup the following environment variables:
+```
+COVIDA_CLIENT_ID=YOUR_CLIENT_ID
+COVIDA_AUTHORIZATION=YOUR_ACCESS_TOKEN
+```
+
+
+## Run The Application
+...
+
+### Install the dependencies
+...
+
+### Run the tests
+...
+
+### Run the Web Application
 ...
 
 ## Credits
