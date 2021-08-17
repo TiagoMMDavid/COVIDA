@@ -5,6 +5,7 @@ Chelas Open VIDeogame Application (COVIDA) is a web application that allows user
 
 The groups are made by the user and are restricted to its owner. These can be customized with a name, description and a selection of games. The Web Application provides an authentication functionality for users to create and log into their accounts.
 
+The application was developed in [Node.js](https://nodejs.org/en/) and uses the [express](https://www.npmjs.com/package/express) module to handle HTTP requests.
 All the data is stored through the use of [Elasticsearch](https://www.elastic.co/elasticsearch/). The information about videogames is gathered through the [IGDB API](https://www.igdb.com/api).
 
 ## Table of Contents
