@@ -122,7 +122,7 @@ npm start [PORT] [ELASTICSEARCH_INDEX]
 ```
 
 ## Credits
-This application was implemented in the context of the Internet Programming class at [ISEL](https://www.isel.pt/).
+This application was developed for the Internet Programming class (5th semester) at [ISEL](https://www.isel.pt/).
 
 Developed by:
 * [TiagoMMDavid](https://github.com/TiagoMMDavid)
