@@ -1,4 +1,4 @@
-# COVIDA - Chelas Open VIDeogame Application
+# COVIDA - Chelas Open VIDeogame Application (PI Project)
 
 ## Overview
 Chelas Open VIDeogame Application (COVIDA) is a web application that allows users to search and browse videogames with the possibility of inserting and managing them into groups.
